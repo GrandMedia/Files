@@ -1,0 +1,5 @@
+parameters:
+	excludes_analyse:
+		- %currentWorkingDirectory%/tests/tmp/*
+	ignoreErrors:
+		- '#Constant TEMP_DIR not found#'

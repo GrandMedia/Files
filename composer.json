@@ -1,0 +1,41 @@
+{
+  "name": "grand-media/files",
+  "description": "GrandMedia Files",
+  "license": [
+    "BSD-3-Clause",
+    "GPL-2.0",
+    "GPL-3.0"
+  ],
+  "authors": [
+    {
+      "name": "Grand Media s.r.o.",
+      "email": "vesely@grandmedia.cz",
+      "homepage": "http://www.grandmedia.cz"
+    }
+  ],
+  "require": {
+    "php": ">=7.1",
+    "beberlei/assert": "^2.7",
+    "consistence/consistence": "^1.0",
+    "guzzlehttp/streams": "^3.0",
+    "nette/application": "^2.4",
+    "nette/finder": "^2.4",
+    "nette/http": "^2.4",
+    "nette/utils": "^2.4"
+  },
+  "require-dev": {
+    "grand-media/coding-standard": "@dev",
+    "kdyby/coding-standard": "@dev",
+    "nette/tester": "~1.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "GrandMedia\\Files\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "GrandMediaTests\\Files\\": "tests/"
+    }
+  }
+}
