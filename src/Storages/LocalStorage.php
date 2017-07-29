@@ -141,10 +141,6 @@ final class LocalStorage implements \GrandMedia\Files\IFilesStorage
 		$directory = \realpath($directory);
 		$upToDirectory = \realpath($upToDirectory);
 
-		if (!Strings::startsWith($directory, $upToDirectory)) {
-			throw new \InvalidArgumentException(\sprintf('%s must be subdirectory of %s', $directory, $upToDirectory));
-		}
-
 		while ($directory !== $upToDirectory && !(new FilesystemIterator($directory))->valid()) {
 			FileSystem::delete($directory);
 
