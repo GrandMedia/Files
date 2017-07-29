@@ -74,7 +74,7 @@ final class LocalStorage implements \GrandMedia\Files\IFilesStorage
 	{
 		$this->checkExists($file);
 
-		return finfo_file(\finfo_open(FILEINFO_MIME_TYPE), $this->getFilePath($file));
+		return \finfo_file(\finfo_open(FILEINFO_MIME_TYPE), $this->getFilePath($file));
 	}
 
 	public function getPublicUrl(File $file): string
@@ -142,7 +142,7 @@ final class LocalStorage implements \GrandMedia\Files\IFilesStorage
 		$upToDirectory = \realpath($upToDirectory);
 
 		if (!Strings::startsWith($directory, $upToDirectory)) {
-			throw new \InvalidArgumentException(sprintf('%s must be subdirectory of %s', $directory, $upToDirectory));
+			throw new \InvalidArgumentException(\sprintf('%s must be subdirectory of %s', $directory, $upToDirectory));
 		}
 
 		while ($directory !== $upToDirectory && !(new FilesystemIterator($directory))->valid()) {
