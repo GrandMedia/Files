@@ -1,18 +1,17 @@
 {
   "name": "grand-media/files",
   "description": "GrandMedia Files",
-  "license": [
-    "BSD-3-Clause",
-    "GPL-2.0",
-    "GPL-3.0"
-  ],
+  "license": "MIT",
   "authors": [
     {
       "name": "Grand Media s.r.o.",
       "email": "vesely@grandmedia.cz",
-      "homepage": "http://www.grandmedia.cz"
+      "homepage": "https://www.grandmedia.cz"
     }
   ],
+  "support": {
+    "issues": "https://github.com/GrandMedia/Files/issues"
+  },
   "require": {
     "php": ">=7.1",
     "beberlei/assert": "^2.7",
