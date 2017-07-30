@@ -23,8 +23,7 @@
     "nette/utils": "^2.4"
   },
   "require-dev": {
-    "grand-media/coding-standard": "@dev",
-    "kdyby/coding-standard": "@dev",
+    "grand-media/coding-standard": "^1.0",
     "nette/tester": "~1.7"
   },
   "autoload": {
