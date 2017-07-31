@@ -35,7 +35,7 @@ final class LocalStorage implements \GrandMedia\Files\IFilesStorage
 
 		FileSystem::createDir(\dirname($filePath));
 
-		$newStream = new Stream(\fopen($filePath, 'w'));
+		$newStream = new Stream(\fopen('nette.safe://' . $filePath, 'w'));
 		$stream->seek(0);
 		while (!$stream->eof()) {
 			$newStream->write($stream->read(self::BUFFER_LENGTH));
@@ -67,7 +67,7 @@ final class LocalStorage implements \GrandMedia\Files\IFilesStorage
 	{
 		$this->checkExists($file);
 
-		return new Stream(\fopen($this->getFilePath($file), 'r'));
+		return new Stream(\fopen('nette.safe://' . $this->getFilePath($file), 'r'));
 	}
 
 	public function getContentType(File $file): string
