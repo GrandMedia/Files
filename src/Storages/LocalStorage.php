@@ -11,7 +11,7 @@ use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
 use Nette\Utils\Strings;
 
-final class LocalStorage implements \GrandMedia\Files\IFilesStorage
+final class LocalStorage implements \GrandMedia\Files\Storage
 {
 
 	private const ID_CHUNK_LENGTH = 3;

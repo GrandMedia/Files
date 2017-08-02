@@ -4,7 +4,7 @@ namespace GrandMedia\Files;
 
 use GuzzleHttp\Stream\StreamInterface;
 
-interface IFilesStorage
+interface Storage
 {
 
 	public function save(File $file, StreamInterface $stream): void;

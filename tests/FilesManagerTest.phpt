@@ -5,9 +5,9 @@ namespace GrandMediaTests\Files;
 use GrandMedia\Files\File;
 use GrandMedia\Files\FilesManager;
 use GrandMedia\Files\Utils\StreamFactory;
-use GrandMediaTests\Files\Mocks\FilesStorage;
 use GrandMediaTests\Files\Mocks\HttpRequest;
 use GrandMediaTests\Files\Mocks\HttpResponse;
+use GrandMediaTests\Files\Mocks\MemoryStorage;
 use GuzzleHttp\Stream\Stream;
 use Tester\Assert;
 use Tester\FileMock;
@@ -25,7 +25,7 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testSave(): void
 	{
-		$manager = new FilesManager(new FilesStorage());
+		$manager = new FilesManager(new MemoryStorage());
 		$file = new File('1', '1', '1', true);
 
 		$manager->save($file, StreamFactory::fromString(self::DATA_1), true);
@@ -38,7 +38,7 @@ final class FilesManagerTest extends \Tester\TestCase
 	/** @throws \GrandMedia\Files\Exceptions\InvalidStreamException */
 	public function testSaveNotReadableStream(): void
 	{
-		$manager = new FilesManager(new FilesStorage());
+		$manager = new FilesManager(new MemoryStorage());
 		$file = new File('1', '1', '1', true);
 
 		$manager->save($file, new Stream(\fopen(FileMock::create(self::DATA_1), 'w')), true);
@@ -47,7 +47,7 @@ final class FilesManagerTest extends \Tester\TestCase
 	/** @throws \GrandMedia\Files\Exceptions\InvalidFileException */
 	public function testSaveWithoutRewrite(): void
 	{
-		$manager = new FilesManager(new FilesStorage());
+		$manager = new FilesManager(new MemoryStorage());
 		$file = new File('1', '1', '1', true);
 
 		$manager->save($file, StreamFactory::fromString(self::DATA_1), false);
@@ -56,7 +56,7 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testDelete(): void
 	{
-		$storage = new FilesStorage(['1' => ['original' => self::DATA_1]]);
+		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
 		$manager = new FilesManager($storage);
 		$file = new File('1', '1', '1', true);
 
@@ -66,7 +66,7 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testGetStreamResponse(): void
 	{
-		$manager = new FilesManager(new FilesStorage(['1' => ['original' => self::DATA_1]]));
+		$manager = new FilesManager(new MemoryStorage(['1' => ['original' => self::DATA_1]]));
 		$file = new File('1', '1', '1', true);
 
 		$streamResponse = $manager->getStreamResponse($file, true);
@@ -77,7 +77,7 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testGetStream(): void
 	{
-		$storage = new FilesStorage(['1' => ['original' => self::DATA_1]]);
+		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
 		$manager = new FilesManager($storage);
 		$file = new File('1', '1', '1', true);
 
@@ -89,7 +89,7 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testGetWritableStream(): void
 	{
-		$manager = new FilesManager(new FilesStorage(['1' => ['original' => self::DATA_1]], true));
+		$manager = new FilesManager(new MemoryStorage(['1' => ['original' => self::DATA_1]], true));
 		$file = new File('1', '1', '1', true);
 
 		$manager->getStream($file);
@@ -97,7 +97,7 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testContentType(): void
 	{
-		$storage = new FilesStorage(['1' => ['original' => self::DATA_1]]);
+		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
 		$manager = new FilesManager($storage);
 		$file = new File('1', '1', '1', true);
 
@@ -106,7 +106,7 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testPublicUrl(): void
 	{
-		$storage = new FilesStorage(['1' => ['original' => self::DATA_1]]);
+		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
 		$manager = new FilesManager($storage);
 		$file = new File('1', '1', '1', true);
 
@@ -115,7 +115,7 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testSize(): void
 	{
-		$storage = new FilesStorage(['1' => ['original' => self::DATA_1]]);
+		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
 		$manager = new FilesManager($storage);
 		$file = new File('1', '1', '1', true);
 
@@ -124,7 +124,7 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testVariants(): void
 	{
-		$storage = new FilesStorage(['1' => ['original' => self::DATA_1]]);
+		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
 		$manager = new FilesManager($storage);
 		$file = new File('1', '1', '1', true);
 

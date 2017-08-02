@@ -10,10 +10,10 @@ use GuzzleHttp\Stream\StreamInterface;
 final class FilesManager
 {
 
-	/** @var \GrandMedia\Files\IFilesStorage */
+	/** @var \GrandMedia\Files\Storage */
 	private $storage;
 
-	public function __construct(IFilesStorage $storage)
+	public function __construct(Storage $storage)
 	{
 		$this->storage = $storage;
 	}

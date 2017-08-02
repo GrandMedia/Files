@@ -8,7 +8,7 @@ use GuzzleHttp\Stream\StreamInterface;
 use Nette\Utils\Strings;
 use Tester\FileMock;
 
-final class FilesStorage implements \GrandMedia\Files\IFilesStorage
+final class MemoryStorage implements \GrandMedia\Files\Storage
 {
 
 	public const CONTENT_TYPE = 'text/plain';
