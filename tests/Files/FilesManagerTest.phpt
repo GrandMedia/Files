@@ -12,7 +12,7 @@ use GuzzleHttp\Stream\Stream;
 use Tester\Assert;
 use Tester\FileMock;
 
-require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
