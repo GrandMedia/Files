@@ -14,7 +14,7 @@
 	},
 	"require": {
 		"php": ">=7.1",
-		"beberlei/assert": "^2.7",
+		"beberlei/assert": "^3.0",
 		"consistence/consistence": "^1.0",
 		"guzzlehttp/streams": "^3.0",
 		"nette/application": "^2.4",
