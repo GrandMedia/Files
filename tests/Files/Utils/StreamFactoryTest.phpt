@@ -25,7 +25,7 @@ final class StreamFactoryTest extends \Tester\TestCase
 				'type' => '',
 				'size' => \strlen(self::DATA),
 				'tmp_name' => FileMock::create(self::DATA, 'txt'),
-				'error' => UPLOAD_ERR_OK,
+				'error' => \UPLOAD_ERR_OK,
 			]
 		);
 

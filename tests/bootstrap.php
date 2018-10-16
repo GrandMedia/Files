@@ -8,9 +8,9 @@ if (@!include __DIR__ . '/../vendor/autoload.php') {
 	exit(1);
 }
 
-define('TEMP_DIR', __DIR__ . '/tmp/' . (isset($_SERVER['argv']) ? md5(serialize($_SERVER['argv'])) : getmypid()));
+\define('TEMP_DIR', __DIR__ . '/tmp/' . (isset($_SERVER['argv']) ? \md5(\serialize($_SERVER['argv'])) : \getmypid()));
 // create temporary directory
-Helpers::purge(TEMP_DIR);
+Helpers::purge(\TEMP_DIR);
 
 // configure environment
 Environment::setup();

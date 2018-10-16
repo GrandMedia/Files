@@ -15,9 +15,9 @@ require_once __DIR__ . '/../../bootstrap.php';
 final class WritableDirectoryTest extends \Tester\TestCase
 {
 
-	private const DIR = TEMP_DIR . '/test';
-	private const NOT_DIR = TEMP_DIR . '/not-exists';
-	private const NOT_WRITABLE_DIR = TEMP_DIR . '/not-writable';
+	private const DIR = \TEMP_DIR . '/test';
+	private const NOT_DIR = \TEMP_DIR . '/not-exists';
+	private const NOT_WRITABLE_DIR = \TEMP_DIR . '/not-writable';
 
 	/** @throws \GrandMedia\Files\Exceptions\InvalidDirectoryException */
 	public function testNotAbsoluteFilesPath(): void

@@ -17,8 +17,8 @@ require_once __DIR__ . '/../../bootstrap.php';
 final class LocalStorageTest extends \Tester\TestCase
 {
 
-	private const PUBLIC_DIR = TEMP_DIR . '/public';
-	private const FILES_DIR = TEMP_DIR . '/files';
+	private const PUBLIC_DIR = \TEMP_DIR . '/public';
+	private const FILES_DIR = \TEMP_DIR . '/files';
 	private const DATA_1 = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
 	private const DATA_2 = 'Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s.';
 

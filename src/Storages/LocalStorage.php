@@ -74,7 +74,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	{
 		$this->checkExists($file);
 
-		return \finfo_file(\finfo_open(FILEINFO_MIME_TYPE), $this->getFilePath($file));
+		return \finfo_file(\finfo_open(\FILEINFO_MIME_TYPE), $this->getFilePath($file));
 	}
 
 	public function getPublicUrl(File $file): string
