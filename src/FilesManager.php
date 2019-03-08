@@ -2,8 +2,8 @@
 
 namespace GrandMedia\Files;
 
-use GrandMedia\Files\Exceptions\InvalidFileException;
-use GrandMedia\Files\Exceptions\InvalidStreamException;
+use GrandMedia\Files\Exceptions\InvalidFile;
+use GrandMedia\Files\Exceptions\InvalidStream;
 use GrandMedia\Files\Responses\StreamResponse;
 use GuzzleHttp\Stream\StreamInterface;
 
@@ -23,7 +23,7 @@ final class FilesManager
 		$this->checkReadableStream($stream);
 
 		if (!$rewrite && $this->exists($file)) {
-			throw new InvalidFileException('File already exists.');
+			throw new InvalidFile('File already exists.');
 		}
 
 		$this->storage->save($file, $stream);
@@ -50,7 +50,7 @@ final class FilesManager
 		$stream = $this->storage->getStream($file);
 
 		if ($stream->isWritable()) {
-			throw new InvalidStreamException('Stream cannot be writable.');
+			throw new InvalidStream('Stream cannot be writable.');
 		}
 		$this->checkReadableStream($stream);
 
@@ -88,7 +88,7 @@ final class FilesManager
 	private function checkReadableStream(StreamInterface $stream): void
 	{
 		if (!$stream->isReadable() || !$stream->isSeekable()) {
-			throw new InvalidStreamException('Stream must be readable and seekable.');
+			throw new InvalidStream('Stream must be readable and seekable.');
 		}
 	}
 

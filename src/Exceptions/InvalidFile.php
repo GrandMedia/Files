@@ -2,7 +2,7 @@
 
 namespace GrandMedia\Files\Exceptions;
 
-final class InvalidFileException extends \InvalidArgumentException
+final class InvalidFile extends \InvalidArgumentException
 {
 
 }

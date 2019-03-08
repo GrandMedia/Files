@@ -55,7 +55,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/123/ac'));
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidFileException */
+	/** @throws \GrandMedia\Files\Exceptions\InvalidFile */
 	public function testDeleteNotExists(): void
 	{
 		$this->createStorage()->delete(new File('1', '1', '1', true));
@@ -71,7 +71,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		Assert::same(self::DATA_1, (string) $storage->getStream($file));
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidFileException */
+	/** @throws \GrandMedia\Files\Exceptions\InvalidFile */
 	public function testGetStreamNotExists(): void
 	{
 		$this->createStorage()->getStream(new File('1', '1', '1', true));
@@ -87,7 +87,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		Assert::same('text/plain', $storage->getContentType($file));
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidFileException */
+	/** @throws \GrandMedia\Files\Exceptions\InvalidFile */
 	public function testGetContentTypeNotExists(): void
 	{
 		$this->createStorage()->getContentType(new File('1', '1', '1', true));
@@ -113,7 +113,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		Assert::false(\file_exists(self::PUBLIC_DIR . '/name/space/foo/123/ac/original/test.txt'));
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidFileException */
+	/** @throws \GrandMedia\Files\Exceptions\InvalidFile */
 	public function testGetPublicUrlNotExists(): void
 	{
 		$this->createStorage()->getPublicUrl(new File('1', '1', '1', true));
@@ -129,7 +129,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		Assert::same(\strlen(self::DATA_1), $storage->getSize($file));
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidFileException */
+	/** @throws \GrandMedia\Files\Exceptions\InvalidFile */
 	public function testGetSizeNotExists(): void
 	{
 		$this->createStorage()->getSize(new File('1', '1', '1', true));
@@ -162,7 +162,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		Assert::equal(['original_v1'], $storage->getVersions($fileVersion));
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidFileException */
+	/** @throws \GrandMedia\Files\Exceptions\InvalidFile */
 	public function testGetVersionsNotExists(): void
 	{
 		$this->createStorage()->getVersions(new File('1', '1', '1', true));

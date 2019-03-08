@@ -35,7 +35,7 @@ final class FilesManagerTest extends \Tester\TestCase
 		Assert::same(self::DATA_2, (string) $manager->getStream($file));
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidStreamException */
+	/** @throws \GrandMedia\Files\Exceptions\InvalidStream */
 	public function testSaveNotReadableStream(): void
 	{
 		$manager = new FilesManager(new MemoryStorage());
@@ -44,7 +44,7 @@ final class FilesManagerTest extends \Tester\TestCase
 		$manager->save($file, new Stream(\fopen(FileMock::create(self::DATA_1), 'w')), true);
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidFileException */
+	/** @throws \GrandMedia\Files\Exceptions\InvalidFile */
 	public function testSaveWithoutRewrite(): void
 	{
 		$manager = new FilesManager(new MemoryStorage());
@@ -85,7 +85,7 @@ final class FilesManagerTest extends \Tester\TestCase
 	}
 
 	/**
-	 * @throws \GrandMedia\Files\Exceptions\InvalidStreamException
+	 * @throws \GrandMedia\Files\Exceptions\InvalidStream
 	 */
 	public function testGetWritableStream(): void
 	{

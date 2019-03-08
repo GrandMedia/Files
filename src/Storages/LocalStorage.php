@@ -3,7 +3,7 @@
 namespace GrandMedia\Files\Storages;
 
 use FilesystemIterator;
-use GrandMedia\Files\Exceptions\InvalidFileException;
+use GrandMedia\Files\Exceptions\InvalidFile;
 use GrandMedia\Files\File;
 use GuzzleHttp\Stream\Stream;
 use GuzzleHttp\Stream\StreamInterface;
@@ -132,7 +132,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	private function checkExists(File $file): void
 	{
 		if (!$this->exists($file)) {
-			throw new InvalidFileException('File does not exists.');
+			throw new InvalidFile('File does not exists.');
 		}
 	}
 

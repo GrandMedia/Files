@@ -2,7 +2,7 @@
 
 namespace GrandMedia\Files\Utils;
 
-use GrandMedia\Files\Exceptions\InvalidFileUploadException;
+use GrandMedia\Files\Exceptions\InvalidFileUpload;
 use GuzzleHttp\Stream\Stream;
 use Nette\Http\FileUpload;
 
@@ -14,7 +14,7 @@ final class StreamFactory
 	public static function fromFileUpload(FileUpload $fileUpload): Stream
 	{
 		if (!$fileUpload->isOk()) {
-			throw new InvalidFileUploadException('FileUpload is not Ok.');
+			throw new InvalidFileUpload('FileUpload is not Ok.');
 		}
 
 		return self::fromPath($fileUpload->getTemporaryFile());
