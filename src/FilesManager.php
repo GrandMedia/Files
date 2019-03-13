@@ -4,7 +4,6 @@ namespace GrandMedia\Files;
 
 use GrandMedia\Files\Exceptions\InvalidFile;
 use GrandMedia\Files\Exceptions\InvalidStream;
-use GrandMedia\Files\Responses\StreamResponse;
 use GuzzleHttp\Stream\StreamInterface;
 
 final class FilesManager
@@ -34,17 +33,6 @@ final class FilesManager
 	public function delete(File $file): void
 	{
 		$this->storage->delete($file);
-	}
-
-	public function getStreamResponse(File $file, bool $forceDownload): StreamResponse
-	{
-		return new StreamResponse(
-			$this->storage->getStream($file),
-			$file->getName(),
-			$this->storage->getContentType($file),
-			$this->storage->getSize($file),
-			$forceDownload
-		);
 	}
 
 	public function getStream(File $file): StreamInterface

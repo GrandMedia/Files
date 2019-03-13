@@ -5,8 +5,6 @@ namespace GrandMediaTests\Files;
 use GrandMedia\Files\File;
 use GrandMedia\Files\FilesManager;
 use GrandMedia\Files\Utils\StreamFactory;
-use GrandMediaTests\Files\Mocks\HttpRequest;
-use GrandMediaTests\Files\Mocks\HttpResponse;
 use GrandMediaTests\Files\Mocks\MemoryStorage;
 use GuzzleHttp\Stream\Stream;
 use Tester\Assert;
@@ -66,17 +64,6 @@ final class FilesManagerTest extends \Tester\TestCase
 
 		$manager->delete($file);
 		Assert::false($storage->exists($file));
-	}
-
-	public function testGetStreamResponse(): void
-	{
-		$manager = new FilesManager(new MemoryStorage(['1' => ['original' => self::DATA_1]]));
-		$file = new File('1', '1', '1', true);
-
-		$streamResponse = $manager->getStreamResponse($file, true);
-		\ob_start();
-		$streamResponse->send(new HttpRequest(), new HttpResponse());
-		Assert::same(self::DATA_1, \ob_get_clean());
 	}
 
 	public function testGetStream(): void
