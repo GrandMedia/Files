@@ -9,7 +9,9 @@ use function Safe\realpath;
 final class WritableDirectory
 {
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	private $directory;
 
 	public function __construct(string $directory)

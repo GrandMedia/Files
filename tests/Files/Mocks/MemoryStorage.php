@@ -14,13 +14,19 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 	public const CONTENT_TYPE = 'text/plain';
 	public const PUBLIC_URL = 'public/url/';
 
-	/** @var string[][] */
+	/**
+	 * @var string[][]
+	 */
 	private $files;
 
-	/** @var bool */
+	/**
+	 * @var bool
+	 */
 	private $returnWritableStream;
 
-	/** @param  string[][] $files */
+	/**
+	 * @param  string[][] $files
+	 */
 	public function __construct(array $files = [], bool $returnWritableStream = false)
 	{
 		$this->files = $files;

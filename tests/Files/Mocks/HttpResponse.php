@@ -5,7 +5,9 @@ namespace GrandMediaTests\Files\Mocks;
 final class HttpResponse implements \Nette\Http\IResponse
 {
 
-	/** @var string[] */
+	/**
+	 * @var string[]
+	 */
 	private $headers = [];
 
 	/**

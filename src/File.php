@@ -11,19 +11,29 @@ final class File
 	private const NAMESPACE_REGEX = '/^[a-zA-Z\d-_\/]+$/';
 	private const VERSION_REGEX = '/^[a-zA-Z\d-_]+$/';
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	private $id;
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	private $name;
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	private $namespace;
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	private $version;
 
-	/** @var bool */
+	/**
+	 * @var bool
+	 */
 	private $public;
 
 	public function __construct(string $id, string $name, string $namespace, bool $public, string $version = 'original')

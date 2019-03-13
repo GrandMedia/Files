@@ -32,7 +32,9 @@ final class StreamFactoryTest extends \Tester\TestCase
 		Assert::same(self::DATA, (string) StreamFactory::fromFileUpload($fileUpload));
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidFileUpload */
+	/**
+	 * @throws \GrandMedia\Files\Exceptions\InvalidFileUpload
+	 */
 	public function testFromInvalidFileUpload(): void
 	{
 		StreamFactory::fromFileUpload(new FileUpload([]));

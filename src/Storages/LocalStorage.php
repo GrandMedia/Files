@@ -20,10 +20,14 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	private const ID_CHUNK_LENGTH = 3;
 	private const BUFFER_LENGTH = 8192;
 
-	/** @var \GrandMedia\Files\Storages\WritableDirectory */
+	/**
+	 * @var \GrandMedia\Files\Storages\WritableDirectory
+	 */
 	private $filesDirectory;
 
-	/** @var \GrandMedia\Files\Storages\WritableDirectory */
+	/**
+	 * @var \GrandMedia\Files\Storages\WritableDirectory
+	 */
 	private $publicDirectory;
 
 	public function __construct(WritableDirectory $filesDirectory, WritableDirectory $publicDirectory)

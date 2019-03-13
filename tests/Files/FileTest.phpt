@@ -21,7 +21,9 @@ final class FileTest extends \Tester\TestCase
 		new File($id, 'asdf', 'adf', true);
 	}
 
-	/** @throws \Assert\InvalidArgumentException */
+	/**
+	 * @throws \Assert\InvalidArgumentException
+	 */
 	public function testNameInConstructor(): void
 	{
 		new File('asdf', '', 'asdf', true);

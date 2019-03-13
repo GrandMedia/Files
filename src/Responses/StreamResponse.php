@@ -9,19 +9,29 @@ use Nette\Http\IResponse;
 final class StreamResponse implements \Nette\Application\IResponse
 {
 
-	/** @var \GuzzleHttp\Stream\StreamInterface */
+	/**
+	 * @var \GuzzleHttp\Stream\StreamInterface
+	 */
 	private $stream;
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	private $contentType;
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	private $name;
 
-	/** @var int */
+	/**
+	 * @var int
+	 */
 	private $size;
 
-	/** @var bool */
+	/**
+	 * @var bool
+	 */
 	private $forceDownload;
 
 	public function __construct(

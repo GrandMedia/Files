@@ -19,19 +19,25 @@ final class WritableDirectoryTest extends \Tester\TestCase
 	private const NOT_DIR = \TEMP_DIR . '/not-exists';
 	private const NOT_WRITABLE_DIR = \TEMP_DIR . '/not-writable';
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidDirectory */
+	/**
+	 * @throws \GrandMedia\Files\Exceptions\InvalidDirectory
+	 */
 	public function testNotAbsoluteFilesPath(): void
 	{
 		new WritableDirectory('..');
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidDirectory */
+	/**
+	 * @throws \GrandMedia\Files\Exceptions\InvalidDirectory
+	 */
 	public function testNotDirectory(): void
 	{
 		new WritableDirectory(self::NOT_DIR);
 	}
 
-	/** @throws \GrandMedia\Files\Exceptions\InvalidDirectory */
+	/**
+	 * @throws \GrandMedia\Files\Exceptions\InvalidDirectory
+	 */
 	public function testNotWritableDirFilesPath(): void
 	{
 		FileSystem::createDir(self::NOT_WRITABLE_DIR, '0555');
