@@ -4,7 +4,6 @@ namespace GrandMediaTests\Files;
 
 use GrandMedia\Files\File;
 use GrandMedia\Files\FilesManager;
-use GrandMedia\Files\Utils\StreamFactory;
 use GrandMediaTests\Files\Mocks\MemoryStorage;
 use GuzzleHttp\Stream\Stream;
 use Tester\Assert;
@@ -26,10 +25,10 @@ final class FilesManagerTest extends \Tester\TestCase
 		$manager = new FilesManager(new MemoryStorage());
 		$file = new File('1', '1', '1', true);
 
-		$manager->save($file, StreamFactory::fromString(self::DATA_1), true);
+		$manager->save($file, Stream::factory(self::DATA_1), true);
 		Assert::same(self::DATA_1, (string) $manager->getStream($file));
 
-		$manager->save($file, StreamFactory::fromString(self::DATA_2), true);
+		$manager->save($file, Stream::factory(self::DATA_2), true);
 		Assert::same(self::DATA_2, (string) $manager->getStream($file));
 	}
 
@@ -52,8 +51,8 @@ final class FilesManagerTest extends \Tester\TestCase
 		$manager = new FilesManager(new MemoryStorage());
 		$file = new File('1', '1', '1', true);
 
-		$manager->save($file, StreamFactory::fromString(self::DATA_1), false);
-		$manager->save($file, StreamFactory::fromString(self::DATA_2), false);
+		$manager->save($file, Stream::factory(self::DATA_1), false);
+		$manager->save($file, Stream::factory(self::DATA_2), false);
 	}
 
 	public function testDelete(): void

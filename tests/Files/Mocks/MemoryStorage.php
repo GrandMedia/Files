@@ -3,10 +3,11 @@
 namespace GrandMediaTests\Files\Mocks;
 
 use GrandMedia\Files\File;
-use GrandMedia\Files\Utils\StreamFactory;
+use GuzzleHttp\Stream\Stream;
 use GuzzleHttp\Stream\StreamInterface;
 use Nette\Utils\Strings;
 use Tester\FileMock;
+use function Safe\fopen;
 
 final class MemoryStorage implements \GrandMedia\Files\Storage
 {
@@ -48,8 +49,8 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 		$data = $this->files[$file->getId()][$file->getVersion()];
 
 		return $this->returnWritableStream ?
-			StreamFactory::fromString($data) :
-			StreamFactory::fromPath(FileMock::create($data));
+			Stream::factory($data) :
+			Stream::factory(fopen(FileMock::create($data), 'rb'));
 	}
 
 	public function getContentType(File $file): string

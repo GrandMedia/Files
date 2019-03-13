@@ -16,11 +16,8 @@
 		"php": ">=7.1",
 		"ext-fileinfo": "*",
 		"beberlei/assert": "^3.0",
-		"consistence/consistence": "^1.0",
 		"guzzlehttp/streams": "^3.0",
-		"nette/application": "^2.4",
 		"nette/finder": "^2.4",
-		"nette/http": "^2.4",
 		"nette/safe-stream": "^2.3",
 		"nette/utils": "^2.4",
 		"thecodingmachine/safe": "^0.1.14"
