@@ -4,7 +4,6 @@ namespace GrandMediaTests\Files\Storages;
 
 use GrandMedia\Files\File;
 use GrandMedia\Files\Storages\LocalStorage;
-use GrandMedia\Files\Storages\WritableDirectory;
 use GrandMedia\Files\Utils\StreamFactory;
 use Nette\Utils\FileSystem;
 use Tester\Assert;
@@ -19,8 +18,42 @@ final class LocalStorageTest extends \Tester\TestCase
 
 	private const PUBLIC_DIR = \TEMP_DIR . '/public';
 	private const FILES_DIR = \TEMP_DIR . '/files';
+	private const NOT_DIR = \TEMP_DIR . '/not-exists';
+	private const NOT_WRITABLE_DIR = \TEMP_DIR . '/not-writable';
 	private const DATA_1 = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
 	private const DATA_2 = 'Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s.';
+
+	/**
+	 * @throws \Assert\InvalidArgumentException
+	 */
+	public function testFilesNotDir(): void
+	{
+		new LocalStorage(self::NOT_DIR, self::PUBLIC_DIR);
+	}
+
+	/**
+	 * @throws \Assert\InvalidArgumentException
+	 */
+	public function testFilesNotWritableDir(): void
+	{
+		new LocalStorage(self::NOT_WRITABLE_DIR, self::PUBLIC_DIR);
+	}
+
+	/**
+	 * @throws \Assert\InvalidArgumentException
+	 */
+	public function testPublicNotDir(): void
+	{
+		new LocalStorage(self::FILES_DIR, self::NOT_DIR);
+	}
+
+	/**
+	 * @throws \Assert\InvalidArgumentException
+	 */
+	public function testPublicNotWritableDir(): void
+	{
+		new LocalStorage(self::FILES_DIR, self::NOT_WRITABLE_DIR);
+	}
 
 	public function testSave(): void
 	{
@@ -186,11 +219,19 @@ final class LocalStorageTest extends \Tester\TestCase
 
 		FileSystem::createDir(self::FILES_DIR);
 		FileSystem::createDir(self::PUBLIC_DIR);
+		FileSystem::createDir(self::NOT_WRITABLE_DIR, '0555');
+	}
+
+	protected function tearDown(): void
+	{
+		parent::tearDown();
+
+		\rmdir(self::NOT_WRITABLE_DIR);
 	}
 
 	private function createStorage(): LocalStorage
 	{
-		return new LocalStorage(new WritableDirectory(self::FILES_DIR), new WritableDirectory(self::PUBLIC_DIR));
+		return new LocalStorage(self::FILES_DIR, self::PUBLIC_DIR);
 	}
 
 }

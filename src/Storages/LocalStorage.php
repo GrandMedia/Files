@@ -2,6 +2,7 @@
 
 namespace GrandMedia\Files\Storages;
 
+use Assert\Assertion;
 use FilesystemIterator;
 use GrandMedia\Files\Exceptions\InvalidFile;
 use GrandMedia\Files\File;
@@ -21,19 +22,24 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	private const BUFFER_LENGTH = 8192;
 
 	/**
-	 * @var \GrandMedia\Files\Storages\WritableDirectory
+	 * @var string
 	 */
 	private $filesDirectory;
 
 	/**
-	 * @var \GrandMedia\Files\Storages\WritableDirectory
+	 * @var string
 	 */
 	private $publicDirectory;
 
-	public function __construct(WritableDirectory $filesDirectory, WritableDirectory $publicDirectory)
+	public function __construct(string $filesDirectory, string $publicDirectory)
 	{
-		$this->filesDirectory = $filesDirectory;
-		$this->publicDirectory = $publicDirectory;
+		Assertion::directory($filesDirectory);
+		Assertion::writeable($filesDirectory);
+		Assertion::directory($publicDirectory);
+		Assertion::writeable($publicDirectory);
+
+		$this->filesDirectory = realpath($filesDirectory);
+		$this->publicDirectory = realpath($publicDirectory);
 	}
 
 	public function save(File $file, StreamInterface $stream): void
@@ -56,7 +62,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 		$filePath = $this->getFilePath($file);
 
 		FileSystem::delete($filePath);
-		$this->deleteEmptyDirectories(\dirname($filePath), (string) $this->filesDirectory);
+		$this->deleteEmptyDirectories(\dirname($filePath), $this->filesDirectory);
 
 		if ($file->isPublic()) {
 			$publicDirectory = \dirname($this->getPublicFilePath($file));
@@ -65,7 +71,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 					FileSystem::delete($publicFile);
 				}
 
-				$this->deleteEmptyDirectories($publicDirectory, (string) $this->publicDirectory);
+				$this->deleteEmptyDirectories($publicDirectory, $this->publicDirectory);
 			}
 		}
 	}
@@ -100,7 +106,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 
 		return Strings::substring(
 			$publicFilePath,
-			Strings::length((string) $this->publicDirectory) + 1
+			Strings::length($this->publicDirectory) + 1
 		);
 	}
 
@@ -160,7 +166,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	private function getPublicFilePath(File $file): string
 	{
 		$directories = [
-			(string) $this->publicDirectory,
+			$this->publicDirectory,
 			$file->getNamespace(),
 		];
 
@@ -179,7 +185,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	private function getFilePath(File $file): string
 	{
 		$directories = [
-			(string) $this->filesDirectory,
+			$this->filesDirectory,
 			$file->getNamespace(),
 		];
 
