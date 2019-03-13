@@ -4,6 +4,7 @@ namespace GrandMedia\Files\Storages;
 
 use GrandMedia\Files\Exceptions\InvalidDirectory;
 use Nette\Utils\FileSystem;
+use function Safe\realpath;
 
 final class WritableDirectory
 {
@@ -15,13 +16,15 @@ final class WritableDirectory
 	{
 		if (!FileSystem::isAbsolute($directory)) {
 			throw new InvalidDirectory(\sprintf('Directory %s is not an absolute path.', $directory));
-		} elseif (!@\is_dir($directory)) {
+		}
+		if (!@\is_dir($directory)) {
 			throw new InvalidDirectory(\sprintf('Directory %s is not a directory.', $directory));
-		} elseif (!@\is_writable($directory)) {
+		}
+		if (!@\is_writable($directory)) {
 			throw new InvalidDirectory(\sprintf('Directory %s is not writable.', $directory));
 		}
 
-		$this->directory = \realpath($directory);
+		$this->directory = realpath($directory);
 	}
 
 	public function __toString(): string

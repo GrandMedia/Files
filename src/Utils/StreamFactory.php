@@ -5,6 +5,7 @@ namespace GrandMedia\Files\Utils;
 use GrandMedia\Files\Exceptions\InvalidFileUpload;
 use GuzzleHttp\Stream\Stream;
 use Nette\Http\FileUpload;
+use function Safe\fopen;
 
 final class StreamFactory
 {
@@ -22,7 +23,7 @@ final class StreamFactory
 
 	public static function fromPath(string $path): Stream
 	{
-		return new Stream(\fopen($path, 'r'));
+		return new Stream(fopen($path, 'rb'));
 	}
 
 	public static function fromString(string $content): Stream

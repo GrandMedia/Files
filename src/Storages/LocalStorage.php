@@ -10,6 +10,9 @@ use GuzzleHttp\Stream\StreamInterface;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
 use Nette\Utils\Strings;
+use function Safe\filesize;
+use function Safe\fopen;
+use function Safe\realpath;
 
 final class LocalStorage implements \GrandMedia\Files\Storage
 {
@@ -35,7 +38,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 
 		FileSystem::createDir(\dirname($filePath));
 
-		$newStream = new Stream(\fopen('nette.safe://' . $filePath, 'w'));
+		$newStream = new Stream(fopen('nette.safe://' . $filePath, 'wb'));
 		$stream->seek(0);
 		while (!$stream->eof()) {
 			$newStream->write($stream->read(self::BUFFER_LENGTH));
@@ -67,7 +70,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	{
 		$this->checkExists($file);
 
-		return new Stream(\fopen('nette.safe://' . $this->getFilePath($file), 'r'));
+		return new Stream(fopen('nette.safe://' . $this->getFilePath($file), 'rb'));
 	}
 
 	public function getContentType(File $file): string
@@ -101,7 +104,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	{
 		$this->checkExists($file);
 
-		return \filesize($this->getFilePath($file));
+		return filesize($this->getFilePath($file));
 	}
 
 	/**
@@ -138,8 +141,8 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 
 	private function deleteEmptyDirectories(string $directory, string $upToDirectory): void
 	{
-		$directory = \realpath($directory);
-		$upToDirectory = \realpath($upToDirectory);
+		$directory = realpath($directory);
+		$upToDirectory = realpath($upToDirectory);
 
 		while ($directory !== $upToDirectory && !(new FilesystemIterator($directory))->valid()) {
 			FileSystem::delete($directory);

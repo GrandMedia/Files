@@ -15,7 +15,7 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 	public const PUBLIC_URL = 'public/url/';
 
 	/** @var string[][] */
-	private $files = [];
+	private $files;
 
 	/** @var bool */
 	private $returnWritableStream;
@@ -70,7 +70,7 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 
 		foreach ($this->files[$file->getId()] as $version => $data) {
 			if (Strings::startsWith($version, $file->getVersion())) {
-				$versions[] = $version;
+				$versions[] = (string) $version;
 			}
 		}
 

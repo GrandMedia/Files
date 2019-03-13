@@ -34,16 +34,16 @@ final class HttpRequest implements \Nette\Http\IRequest
 
 	/**
 	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingParameterTypeHint
-	 * @param string $key
+	 * @return \Nette\Http\FileUpload|array|null
 	 */
-	public function getFile($key): string
+	public function getFile($key)
 	{
-		return '';
+		return null;
 	}
 
-	public function getFiles(): string
+	public function getFiles(): array
 	{
-		return '';
+		return [];
 	}
 
 	/**
@@ -56,9 +56,9 @@ final class HttpRequest implements \Nette\Http\IRequest
 		return '';
 	}
 
-	public function getCookies(): string
+	public function getCookies(): array
 	{
-		return '';
+		return [];
 	}
 
 	public function getMethod(): string
@@ -85,9 +85,9 @@ final class HttpRequest implements \Nette\Http\IRequest
 		return '';
 	}
 
-	public function getHeaders(): string
+	public function getHeaders(): array
 	{
-		return '';
+		return [];
 	}
 
 	public function isSecured(): bool
