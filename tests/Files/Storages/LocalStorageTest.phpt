@@ -4,6 +4,7 @@ namespace GrandMediaTests\Files\Storages;
 
 use GrandMedia\Files\File;
 use GrandMedia\Files\Storages\LocalStorage;
+use GrandMedia\Files\Version;
 use GuzzleHttp\Stream\Stream;
 use Nette\Utils\FileSystem;
 use Tester\Assert;
@@ -58,159 +59,124 @@ final class LocalStorageTest extends \Tester\TestCase
 	public function testSave(): void
 	{
 		$storage = $this->createStorage();
-		$file = new File('123ab', 'test.txt', 'name/space/foo', true);
+		$file = new File('12345ab', 'test.txt', 'name/space/foo', true);
 
-		$storage->save($file, Stream::factory(self::DATA_1));
-		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/123/ab/original'));
-		Assert::same(self::DATA_1, \file_get_contents(self::FILES_DIR . '/name/space/foo/123/ab/original'));
+		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
+		Assert::same(self::DATA_1, \file_get_contents(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
 
-		$storage->save($file, Stream::factory(self::DATA_2));
-		Assert::same(self::DATA_2, \file_get_contents(self::FILES_DIR . '/name/space/foo/123/ab/original'));
+		$storage->save(Stream::factory(self::DATA_2), $file, null);
+		Assert::same(self::DATA_2, \file_get_contents(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
+	}
+
+	public function testSaveVersion(): void
+	{
+		$storage = $this->createStorage();
+		$file = new File('12345ab', 'test.txt', 'name/space/foo', true);
+		$version = Version::from('v1');
+
+		$storage->save(Stream::factory(self::DATA_1), $file, $version);
+		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab_v1'));
+		Assert::same(self::DATA_1, \file_get_contents(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab_v1'));
 	}
 
 	public function testDelete(): void
 	{
 		$storage = $this->createStorage();
-		$file1 = new File('123ab', 'test.txt', 'name/space/foo', true);
-		$file2 = new File('123ac', 'test.txt', 'name/space/foo', true);
+		$file = new File('12345ab', 'test.txt', 'name/space/foo', true);
+		$version = Version::from('v1');
 
-		$storage->save($file1, Stream::factory(self::DATA_1));
-		$storage->save($file2, Stream::factory(self::DATA_2));
-		$storage->getPublicUrl($file1);
-		$storage->getPublicUrl($file2);
-		$storage->getPublicUrl(new File('123ab', 'bar.txt', 'name/space/foo', true));
+		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		$storage->getPublicUrl($file, null);
+		$storage->save(Stream::factory(self::DATA_2), $file, $version);
+		$storage->getPublicUrl($file, $version);
 
-		$storage->delete($file1);
-		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo/123/ab/original'));
-		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo/123/ab'));
-		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/123/ac/original'));
-		Assert::false(\file_exists(self::PUBLIC_DIR . '/name/space/foo/123/ab'));
-		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/123/ac'));
-	}
+		$storage->delete($file, $version);
+		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab_v1'));
+		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
+		Assert::false(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test_v1.txt'));
+		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
 
-	/**
-	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
-	 */
-	public function testDeleteNotExists(): void
-	{
-		$this->createStorage()->delete(new File('1', '1', '1', true));
+		$storage->delete($file, null);
+		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
+		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo/12345'));
+		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo'));
+		Assert::true(\file_exists(self::FILES_DIR));
 	}
 
 	public function testGetStream(): void
 	{
 		$storage = $this->createStorage();
-		$file = new File('123ab', 'test.txt', 'name/space/foo', true);
+		$file = new File('12345ab', 'test.txt', 'name/space/foo', true);
 
-		$storage->save($file, Stream::factory(self::DATA_1));
+		$storage->save(Stream::factory(self::DATA_1), $file, null);
 
-		Assert::same(self::DATA_1, (string) $storage->getStream($file));
-	}
-
-	/**
-	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
-	 */
-	public function testGetStreamNotExists(): void
-	{
-		$this->createStorage()->getStream(new File('1', '1', '1', true));
+		Assert::same(self::DATA_1, (string) $storage->getStream($file, null));
 	}
 
 	public function testGetContentType(): void
 	{
 		$storage = $this->createStorage();
-		$file = new File('123ab', 'test.txt', 'name/space/foo', true);
+		$file = new File('12345ab', 'test.txt', 'name/space/foo', true);
 
-		$storage->save($file, Stream::factory(self::DATA_1));
+		$storage->save(Stream::factory(self::DATA_1), $file, null);
 
-		Assert::same('text/plain', $storage->getContentType($file));
-	}
-
-	/**
-	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
-	 */
-	public function testGetContentTypeNotExists(): void
-	{
-		$this->createStorage()->getContentType(new File('1', '1', '1', true));
+		Assert::same('text/plain', $storage->getContentType($file, null));
 	}
 
 	public function testGetPublicUrl(): void
 	{
 		$storage = $this->createStorage();
-		$file1 = new File('123ab', 'test.txt', 'name/space/foo', true);
-		$file1OtherName = new File('123ab', 'foo.txt', 'name/space/foo', true);
-		$file2 = new File('123ac', 'test.txt', 'name/space/foo', false);
+		$file = new File('12345ab', 'test.txt', 'name/space/foo', true);
 
-		$storage->save($file1, Stream::factory(self::DATA_1));
+		$storage->save(Stream::factory(self::DATA_1), $file, null);
 
-		Assert::same('name/space/foo/123/ab/original/test.txt', $storage->getPublicUrl($file1));
-		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/123/ab/original/test.txt'));
-		Assert::same('name/space/foo/123/ab/original/foo.txt', $storage->getPublicUrl($file1OtherName));
-		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/123/ab/original/foo.txt'));
-
-		$storage->save($file2, Stream::factory(self::DATA_2));
-
-		Assert::same('', $storage->getPublicUrl($file2));
-		Assert::false(\file_exists(self::PUBLIC_DIR . '/name/space/foo/123/ac/original/test.txt'));
-	}
-
-	/**
-	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
-	 */
-	public function testGetPublicUrlNotExists(): void
-	{
-		$this->createStorage()->getPublicUrl(new File('1', '1', '1', true));
+		Assert::same('name/space/foo/12345/ab/test.txt', $storage->getPublicUrl($file, null));
+		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
 	}
 
 	public function testGetSize(): void
 	{
 		$storage = $this->createStorage();
-		$file = new File('123ab', 'test.txt', 'name/space/foo', true);
+		$file = new File('12345ab', 'test.txt', 'name/space/foo', true);
 
-		$storage->save($file, Stream::factory(self::DATA_1));
+		$storage->save(Stream::factory(self::DATA_1), $file, null);
 
-		Assert::same(\strlen(self::DATA_1), $storage->getSize($file));
-	}
-
-	/**
-	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
-	 */
-	public function testGetSizeNotExists(): void
-	{
-		$this->createStorage()->getSize(new File('1', '1', '1', true));
+		Assert::same(\strlen(self::DATA_1), $storage->getSize($file, null));
 	}
 
 	public function testExists(): void
 	{
 		$storage = $this->createStorage();
-		$file1 = new File('123ab', 'test.txt', 'name/space/foo', true);
-		$file2 = new File('123ac', 'test.txt', 'name/space/foo', true);
+		$file1 = new File('12345ab', 'test.txt', 'name/space/foo', true);
+		$file2 = new File('12345ac', 'test.txt', 'name/space/foo', true);
 
-		$storage->save($file1, Stream::factory(self::DATA_1));
+		$storage->save(Stream::factory(self::DATA_1), $file1, null);
 
-		Assert::true($storage->exists($file1));
-		Assert::false($storage->exists($file2));
+		Assert::true($storage->exists($file1, null));
+		Assert::false($storage->exists($file2, null));
 	}
 
 	public function testGetVersions(): void
 	{
 		$storage = $this->createStorage();
-		$file = new File('123ab', 'test.txt', 'name/space/foo', true);
-		$fileVersion = new File('123ab', 'test.txt', 'name/space/foo', true, 'original_v1');
+		$file = new File('12345ab', 'test.txt', 'name/space/foo', true);
 
-		$storage->save($file, Stream::factory(self::DATA_1));
-		$storage->save($fileVersion, Stream::factory(self::DATA_2));
+		$versionV1 = Version::from('v1');
+		$versionV2 = Version::from('v2');
 
-		$versions = $storage->getVersions($file);
-		\sort($versions);
-		Assert::equal(['original', 'original_v1'], $versions);
-		Assert::equal(['original_v1'], $storage->getVersions($fileVersion));
+		$storage->save(Stream::factory(self::DATA_1), $file, $versionV1);
+		$storage->save(Stream::factory(self::DATA_2), $file, $versionV2);
+
+		Assert::equal([$versionV1, $versionV2], $storage->getVersions($file));
 	}
 
-	/**
-	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
-	 */
 	public function testGetVersionsNotExists(): void
 	{
-		$this->createStorage()->getVersions(new File('1', '1', '1', true));
+		$storage = $this->createStorage();
+		$file = new File('12345ab', 'test.txt', 'name/space/foo', true);
+
+		Assert::equal([], $storage->getVersions($file));
 	}
 
 	protected function setUp(): void

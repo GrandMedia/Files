@@ -19,25 +19,40 @@ final class FilesManager
 		$this->storage = $storage;
 	}
 
-	public function save(File $file, StreamInterface $stream, bool $rewrite): void
+	public function save(StreamInterface $stream, bool $rewrite, File $file, ?Version $version = null): void
 	{
 		$this->checkReadableStream($stream);
 
-		if (!$rewrite && $this->exists($file)) {
+		if (!$rewrite && $this->exists($file, $version)) {
 			throw new InvalidFile('File already exists.');
 		}
 
-		$this->storage->save($file, $stream);
+		$this->storage->save($stream, $file, $version);
 	}
 
 	public function delete(File $file): void
 	{
-		$this->storage->delete($file);
+		if ($this->exists($file)) {
+			$this->storage->delete($file, null);
+		}
+
+		foreach ($this->storage->getVersions($file) as $version) {
+			$this->storage->delete($file, $version);
+		}
 	}
 
-	public function getStream(File $file): StreamInterface
+	public function deleteVersion(File $file, ?Version $version = null): void
 	{
-		$stream = $this->storage->getStream($file);
+		$this->checkExists($file, $version);
+
+		$this->storage->delete($file, $version);
+	}
+
+	public function getStream(File $file, ?Version $version = null): StreamInterface
+	{
+		$this->checkExists($file, $version);
+
+		$stream = $this->storage->getStream($file, $version);
 
 		if ($stream->isWritable()) {
 			throw new InvalidStream('Stream cannot be writable.');
@@ -47,38 +62,51 @@ final class FilesManager
 		return $stream;
 	}
 
-	public function getContentType(File $file): string
+	public function getContentType(File $file, ?Version $version = null): string
 	{
-		return $this->storage->getContentType($file);
+		$this->checkExists($file, $version);
+
+		return $this->storage->getContentType($file, $version);
 	}
 
-	public function getPublicUrl(File $file): string
+	public function getPublicUrl(File $file, ?Version $version = null): string
 	{
-		return $file->isPublic() ? $this->storage->getPublicUrl($file) : '';
+		$this->checkExists($file, $version);
+
+		return $file->isPublic() ? $this->storage->getPublicUrl($file, $version) : '';
 	}
 
-	public function getSize(File $file): int
+	public function getSize(File $file, ?Version $version = null): int
 	{
-		return $this->storage->getSize($file);
+		$this->checkExists($file, $version);
+
+		return $this->storage->getSize($file, $version);
+	}
+
+	public function exists(File $file, ?Version $version = null): bool
+	{
+		return $this->storage->exists($file, $version);
 	}
 
 	/**
-	 * @return string[]
+	 * @return \GrandMedia\Files\Version[]
 	 */
 	public function getVersions(File $file): array
 	{
 		return $this->storage->getVersions($file);
 	}
 
-	public function exists(File $file): bool
-	{
-		return $this->storage->exists($file);
-	}
-
 	private function checkReadableStream(StreamInterface $stream): void
 	{
 		if (!$stream->isReadable() || !$stream->isSeekable()) {
 			throw new InvalidStream('Stream must be readable and seekable.');
+		}
+	}
+
+	private function checkExists(File $file, ?Version $version): void
+	{
+		if (!$this->exists($file, $version)) {
+			throw new InvalidFile('File does not exists.');
 		}
 	}
 

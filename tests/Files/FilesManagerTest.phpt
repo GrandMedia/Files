@@ -4,6 +4,7 @@ namespace GrandMediaTests\Files;
 
 use GrandMedia\Files\File;
 use GrandMedia\Files\FilesManager;
+use GrandMedia\Files\Version;
 use GrandMediaTests\Files\Mocks\MemoryStorage;
 use GuzzleHttp\Stream\Stream;
 use Tester\Assert;
@@ -22,13 +23,13 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testSave(): void
 	{
-		$manager = new FilesManager(new MemoryStorage());
+		$manager = $this->createManager();
 		$file = new File('1', '1', '1', true);
 
-		$manager->save($file, Stream::factory(self::DATA_1), true);
+		$manager->save(Stream::factory(self::DATA_1), true, $file);
 		Assert::same(self::DATA_1, (string) $manager->getStream($file));
 
-		$manager->save($file, Stream::factory(self::DATA_2), true);
+		$manager->save(Stream::factory(self::DATA_2), true, $file);
 		Assert::same(self::DATA_2, (string) $manager->getStream($file));
 	}
 
@@ -37,10 +38,10 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testSaveNotReadableStream(): void
 	{
-		$manager = new FilesManager(new MemoryStorage());
+		$manager = $this->createManager();
 		$file = new File('1', '1', '1', true);
 
-		$manager->save($file, new Stream(\fopen(FileMock::create(self::DATA_1), 'w')), true);
+		$manager->save(new Stream(\fopen(FileMock::create(self::DATA_1), 'wb')), true, $file);
 	}
 
 	/**
@@ -48,30 +49,61 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testSaveWithoutRewrite(): void
 	{
-		$manager = new FilesManager(new MemoryStorage());
+		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
 		$file = new File('1', '1', '1', true);
 
-		$manager->save($file, Stream::factory(self::DATA_1), false);
-		$manager->save($file, Stream::factory(self::DATA_2), false);
+		$manager->save(Stream::factory(self::DATA_2), false, $file);
 	}
 
 	public function testDelete(): void
 	{
-		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
-		$manager = new FilesManager($storage);
+		$manager = $this->createManager(['1' => ['' => self::DATA_1, 'v1' => self::DATA_2]]);
 		$file = new File('1', '1', '1', true);
 
 		$manager->delete($file);
-		Assert::false($storage->exists($file));
+		Assert::false($manager->exists($file));
+		Assert::false($manager->exists($file, Version::from('v1')));
+	}
+
+	public function testDeleteNotExists(): void
+	{
+		$this->createManager()->delete(new File('1', '1', '1', true));
+
+		Assert::true(true);
+	}
+
+	public function testDeleteVersion(): void
+	{
+		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
+		$file = new File('1', '1', '1', true);
+
+		$manager->deleteVersion($file);
+		Assert::false($manager->exists($file));
+	}
+
+	/**
+	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
+	 */
+	public function testDeleteVersionNotExists(): void
+	{
+		$this->createManager()->deleteVersion(new File('1', '1', '1', true));
 	}
 
 	public function testGetStream(): void
 	{
-		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
-		$manager = new FilesManager($storage);
+		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
+		;
 		$file = new File('1', '1', '1', true);
 
-		Assert::same((string) $storage->getStream($file), (string) $manager->getStream($file));
+		Assert::same(self::DATA_1, (string) $manager->getStream($file));
+	}
+
+	/**
+	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
+	 */
+	public function testGetStreamNotExists(): void
+	{
+		$this->createManager()->getStream(new File('1', '1', '1', true));
 	}
 
 	/**
@@ -79,7 +111,7 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testGetWritableStream(): void
 	{
-		$manager = new FilesManager(new MemoryStorage(['1' => ['original' => self::DATA_1]], true));
+		$manager = new FilesManager(new MemoryStorage(['1' => ['' => self::DATA_1]], true));
 		$file = new File('1', '1', '1', true);
 
 		$manager->getStream($file);
@@ -87,38 +119,66 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testContentType(): void
 	{
-		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
-		$manager = new FilesManager($storage);
+		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
 		$file = new File('1', '1', '1', true);
 
-		Assert::same($storage->getContentType($file), $manager->getContentType($file));
+		Assert::same(MemoryStorage::CONTENT_TYPE, $manager->getContentType($file));
+	}
+
+	/**
+	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
+	 */
+	public function testGetContentTypeNotExists(): void
+	{
+		$this->createManager()->getContentType(new File('1', '1', '1', true));
 	}
 
 	public function testPublicUrl(): void
 	{
-		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
-		$manager = new FilesManager($storage);
+		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
 		$file = new File('1', '1', '1', true);
 
-		Assert::same($storage->getPublicUrl($file), $manager->getPublicUrl($file));
+		Assert::same(MemoryStorage::PUBLIC_URL . '1', $manager->getPublicUrl($file));
+	}
+
+	/**
+	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
+	 */
+	public function testGetPublicUrlNotExists(): void
+	{
+		$this->createManager()->getPublicUrl(new File('1', '1', '1', true));
 	}
 
 	public function testSize(): void
 	{
-		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
-		$manager = new FilesManager($storage);
+		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
 		$file = new File('1', '1', '1', true);
 
-		Assert::same($storage->getSize($file), $manager->getSize($file));
+		Assert::same(\strlen(self::DATA_1), $manager->getSize($file));
 	}
 
-	public function testVariants(): void
+	/**
+	 * @throws \GrandMedia\Files\Exceptions\InvalidFile
+	 */
+	public function testGetSizeNotExists(): void
 	{
-		$storage = new MemoryStorage(['1' => ['original' => self::DATA_1]]);
-		$manager = new FilesManager($storage);
+		$this->createManager()->getSize(new File('1', '1', '1', true));
+	}
+
+	public function testGetVersions(): void
+	{
+		$manager = $this->createManager(['1' => ['v1' => self::DATA_1, 'v2' => self::DATA_2]]);
 		$file = new File('1', '1', '1', true);
 
-		Assert::same($storage->getVersions($file), $manager->getVersions($file));
+		Assert::equal([Version::from('v1'), Version::from('v2')], $manager->getVersions($file));
+	}
+
+	/**
+	 * @param  string[][] $files
+	 */
+	private function createManager(array $files = []): FilesManager
+	{
+		return new FilesManager(new MemoryStorage($files));
 	}
 
 }

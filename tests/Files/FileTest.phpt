@@ -24,7 +24,7 @@ final class FileTest extends \Tester\TestCase
 	/**
 	 * @throws \Assert\InvalidArgumentException
 	 */
-	public function testNameInConstructor(): void
+	public function testBlankName(): void
 	{
 		new File('asdf', '', 'asdf', true);
 	}
@@ -36,15 +36,6 @@ final class FileTest extends \Tester\TestCase
 	public function testNamespaceRegex(string $namespace): void
 	{
 		new File('asdf', 'adf', $namespace, true);
-	}
-
-	/**
-	 * @dataProvider getInvalidVersions
-	 * @throws \Assert\InvalidArgumentException
-	 */
-	public function testVersionRegex(string $version): void
-	{
-		new File('asdf', 'adf', 'asdf', true, $version);
 	}
 
 	public function getInvalidIds(): array
@@ -65,18 +56,6 @@ final class FileTest extends \Tester\TestCase
 			[''],
 			['file name'],
 			['file$name'],
-			['file\name'],
-			['filečname'],
-		];
-	}
-
-	public function getInvalidVersions(): array
-	{
-		return [
-			[''],
-			['file name'],
-			['file$name'],
-			['file/name'],
 			['file\name'],
 			['filečname'],
 		];

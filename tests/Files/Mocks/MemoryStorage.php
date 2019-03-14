@@ -3,9 +3,9 @@
 namespace GrandMediaTests\Files\Mocks;
 
 use GrandMedia\Files\File;
+use GrandMedia\Files\Version;
 use GuzzleHttp\Stream\Stream;
 use GuzzleHttp\Stream\StreamInterface;
-use Nette\Utils\Strings;
 use Tester\FileMock;
 use function Safe\fopen;
 
@@ -34,59 +34,61 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 		$this->returnWritableStream = $returnWritableStream;
 	}
 
-	public function save(File $file, StreamInterface $stream): void
+	public function save(StreamInterface $stream, File $file, ?Version $version): void
 	{
-		$this->files[$file->getId()][$file->getVersion()] = (string) $stream;
+		$this->files[$file->getId()][$version === null ? '' : (string) $version] = (string) $stream;
 	}
 
-	public function delete(File $file): void
+	public function delete(File $file, ?Version $version): void
 	{
-		unset($this->files[$file->getId()][$file->getVersion()]);
+		unset($this->files[$file->getId()][$version === null ? '' : (string) $version]);
 	}
 
-	public function getStream(File $file): StreamInterface
+	public function getStream(File $file, ?Version $version): StreamInterface
 	{
-		$data = $this->files[$file->getId()][$file->getVersion()];
+		$data = $this->files[$file->getId()][$version === null ? '' : (string) $version];
 
 		return $this->returnWritableStream ?
 			Stream::factory($data) :
 			Stream::factory(fopen(FileMock::create($data), 'rb'));
 	}
 
-	public function getContentType(File $file): string
+	public function getContentType(File $file, ?Version $version): string
 	{
 		return self::CONTENT_TYPE;
 	}
 
-	public function getPublicUrl(File $file): string
+	public function getPublicUrl(File $file, ?Version $version): string
 	{
-		return self::PUBLIC_URL . $file->getId();
+		return self::PUBLIC_URL . $file->getId() . ($version === null ? '' : '_' . $version);
 	}
 
-	public function getSize(File $file): int
+	public function getSize(File $file, ?Version $version): int
 	{
-		return \strlen($this->files[$file->getId()][$file->getVersion()]);
+		return \strlen($this->files[$file->getId()][$version === null ? '' : (string) $version]);
 	}
 
 	/**
-	 * @return string[]
+	 * @return \GrandMedia\Files\Version[]
 	 */
 	public function getVersions(File $file): array
 	{
 		$versions = [];
 
-		foreach ($this->files[$file->getId()] as $version => $data) {
-			if (Strings::startsWith($version, $file->getVersion())) {
-				$versions[] = (string) $version;
+		if (isset($this->files[$file->getId()])) {
+			foreach ($this->files[$file->getId()] as $version => $data) {
+				if ($version !== '') {
+					$versions[] = Version::from((string) $version);
+				}
 			}
 		}
 
 		return $versions;
 	}
 
-	public function exists(File $file): bool
+	public function exists(File $file, ?Version $version): bool
 	{
-		return isset($this->files[$file->getId()][$file->getVersion()]);
+		return isset($this->files[$file->getId()][$version === null ? '' : (string) $version]);
 	}
 
 }

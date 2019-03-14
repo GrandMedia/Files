@@ -9,7 +9,6 @@ final class File
 
 	private const ID_REGEX = '/^[a-zA-Z\d-_]+$/';
 	private const NAMESPACE_REGEX = '/^[a-zA-Z\d-_\/]+$/';
-	private const VERSION_REGEX = '/^[a-zA-Z\d-_]+$/';
 
 	/**
 	 * @var string
@@ -27,27 +26,20 @@ final class File
 	private $namespace;
 
 	/**
-	 * @var string
-	 */
-	private $version;
-
-	/**
 	 * @var bool
 	 */
 	private $public;
 
-	public function __construct(string $id, string $name, string $namespace, bool $public, string $version = 'original')
+	public function __construct(string $id, string $name, string $namespace, bool $public)
 	{
 		Assertion::regex($id, self::ID_REGEX);
 		Assertion::notBlank($name);
 		Assertion::regex($namespace, self::NAMESPACE_REGEX);
-		Assertion::regex($version, self::VERSION_REGEX);
 
 		$this->id = $id;
 		$this->name = $name;
 		$this->namespace = $namespace;
 		$this->public = $public;
-		$this->version = $version;
 	}
 
 	public function getId(): string
@@ -63,11 +55,6 @@ final class File
 	public function getNamespace(): string
 	{
 		return $this->namespace;
-	}
-
-	public function getVersion(): string
-	{
-		return $this->version;
 	}
 
 	public function isPublic(): bool
