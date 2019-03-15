@@ -31,7 +31,7 @@ final class FilesManager
 		$this->checkReadableStream($stream);
 
 		if (!$rewrite && $this->exists($file, $version)) {
-			throw new InvalidFile('File already exists.');
+			throw InvalidFile::exists($file, $version);
 		}
 
 		$this->storage->save($stream, $file, $version);
@@ -82,7 +82,7 @@ final class FilesManager
 		$stream = $this->storage->getStream($file, $version);
 
 		if ($stream->isWritable()) {
-			throw new InvalidStream('Stream cannot be writable.');
+			throw InvalidStream::writable();
 		}
 		$this->checkReadableStream($stream);
 
@@ -135,14 +135,14 @@ final class FilesManager
 	private function checkReadableStream(StreamInterface $stream): void
 	{
 		if (!$stream->isReadable() || !$stream->isSeekable()) {
-			throw new InvalidStream('Stream must be readable and seekable.');
+			throw InvalidStream::notReadableOrSeekable();
 		}
 	}
 
 	private function checkExists(File $file, ?Version $version): void
 	{
 		if (!$this->exists($file, $version)) {
-			throw new InvalidFile('File does not exists.');
+			throw InvalidFile::notExists($file, $version);
 		}
 	}
 
