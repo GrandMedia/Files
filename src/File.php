@@ -25,12 +25,7 @@ final class File
 	 */
 	private $namespace;
 
-	/**
-	 * @var bool
-	 */
-	private $public;
-
-	public function __construct(string $id, string $name, string $namespace, bool $public)
+	public function __construct(string $id, string $name, string $namespace)
 	{
 		Assertion::regex($id, self::ID_REGEX);
 		Assertion::notBlank($name);
@@ -39,7 +34,6 @@ final class File
 		$this->id = $id;
 		$this->name = $name;
 		$this->namespace = $namespace;
-		$this->public = $public;
 	}
 
 	public function getId(): string
@@ -55,11 +49,6 @@ final class File
 	public function getNamespace(): string
 	{
 		return $this->namespace;
-	}
-
-	public function isPublic(): bool
-	{
-		return $this->public;
 	}
 
 }

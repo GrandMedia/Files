@@ -24,13 +24,15 @@ final class FilesManagerTest extends \Tester\TestCase
 	public function testSave(): void
 	{
 		$manager = $this->createManager();
-		$file = new File('1', '1', '1', true);
+		$file = new File('1', '1', '1');
 
-		$manager->save(Stream::factory(self::DATA_1), true, $file);
+		$manager->save(Stream::factory(self::DATA_1), true, true, $file);
 		Assert::same(self::DATA_1, (string) $manager->getStream($file));
+		Assert::true($manager->isPublic($file));
 
-		$manager->save(Stream::factory(self::DATA_2), true, $file);
+		$manager->save(Stream::factory(self::DATA_2), true, false, $file);
 		Assert::same(self::DATA_2, (string) $manager->getStream($file));
+		Assert::false($manager->isPublic($file));
 	}
 
 	/**
@@ -39,9 +41,9 @@ final class FilesManagerTest extends \Tester\TestCase
 	public function testSaveNotReadableStream(): void
 	{
 		$manager = $this->createManager();
-		$file = new File('1', '1', '1', true);
+		$file = new File('1', '1', '1');
 
-		$manager->save(new Stream(\fopen(FileMock::create(self::DATA_1), 'wb')), true, $file);
+		$manager->save(new Stream(\fopen(FileMock::create(self::DATA_1), 'wb')), true, true, $file);
 	}
 
 	/**
@@ -50,15 +52,15 @@ final class FilesManagerTest extends \Tester\TestCase
 	public function testSaveWithoutRewrite(): void
 	{
 		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
-		$file = new File('1', '1', '1', true);
+		$file = new File('1', '1', '1');
 
-		$manager->save(Stream::factory(self::DATA_2), false, $file);
+		$manager->save(Stream::factory(self::DATA_2), false, true, $file);
 	}
 
 	public function testDelete(): void
 	{
 		$manager = $this->createManager(['1' => ['' => self::DATA_1, 'v1' => self::DATA_2]]);
-		$file = new File('1', '1', '1', true);
+		$file = new File('1', '1', '1');
 
 		$manager->delete($file);
 		Assert::false($manager->exists($file));
@@ -67,7 +69,7 @@ final class FilesManagerTest extends \Tester\TestCase
 
 	public function testDeleteNotExists(): void
 	{
-		$this->createManager()->delete(new File('1', '1', '1', true));
+		$this->createManager()->delete(new File('1', '1', '1'));
 
 		Assert::true(true);
 	}
@@ -75,7 +77,7 @@ final class FilesManagerTest extends \Tester\TestCase
 	public function testDeleteVersion(): void
 	{
 		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
-		$file = new File('1', '1', '1', true);
+		$file = new File('1', '1', '1');
 
 		$manager->deleteVersion($file);
 		Assert::false($manager->exists($file));
@@ -86,14 +88,13 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testDeleteVersionNotExists(): void
 	{
-		$this->createManager()->deleteVersion(new File('1', '1', '1', true));
+		$this->createManager()->deleteVersion(new File('1', '1', '1'));
 	}
 
 	public function testGetStream(): void
 	{
 		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
-		;
-		$file = new File('1', '1', '1', true);
+		$file = new File('1', '1', '1');
 
 		Assert::same(self::DATA_1, (string) $manager->getStream($file));
 	}
@@ -103,7 +104,7 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testGetStreamNotExists(): void
 	{
-		$this->createManager()->getStream(new File('1', '1', '1', true));
+		$this->createManager()->getStream(new File('1', '1', '1'));
 	}
 
 	/**
@@ -111,8 +112,8 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testGetWritableStream(): void
 	{
-		$manager = new FilesManager(new MemoryStorage(['1' => ['' => self::DATA_1]], true));
-		$file = new File('1', '1', '1', true);
+		$manager = new FilesManager(new MemoryStorage(['1' => ['' => self::DATA_1]], [], true));
+		$file = new File('1', '1', '1');
 
 		$manager->getStream($file);
 	}
@@ -120,7 +121,7 @@ final class FilesManagerTest extends \Tester\TestCase
 	public function testContentType(): void
 	{
 		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
-		$file = new File('1', '1', '1', true);
+		$file = new File('1', '1', '1');
 
 		Assert::same(MemoryStorage::CONTENT_TYPE, $manager->getContentType($file));
 	}
@@ -130,13 +131,13 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testGetContentTypeNotExists(): void
 	{
-		$this->createManager()->getContentType(new File('1', '1', '1', true));
+		$this->createManager()->getContentType(new File('1', '1', '1'));
 	}
 
 	public function testPublicUrl(): void
 	{
-		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
-		$file = new File('1', '1', '1', true);
+		$manager = $this->createManager(['1' => ['' => self::DATA_1]], ['1' => ['' => self::DATA_1]]);
+		$file = new File('1', '1', '1');
 
 		Assert::same(MemoryStorage::PUBLIC_URL . '1', $manager->getPublicUrl($file));
 	}
@@ -146,13 +147,13 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testGetPublicUrlNotExists(): void
 	{
-		$this->createManager()->getPublicUrl(new File('1', '1', '1', true));
+		$this->createManager()->getPublicUrl(new File('1', '1', '1'));
 	}
 
 	public function testSize(): void
 	{
 		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
-		$file = new File('1', '1', '1', true);
+		$file = new File('1', '1', '1');
 
 		Assert::same(\strlen(self::DATA_1), $manager->getSize($file));
 	}
@@ -162,23 +163,24 @@ final class FilesManagerTest extends \Tester\TestCase
 	 */
 	public function testGetSizeNotExists(): void
 	{
-		$this->createManager()->getSize(new File('1', '1', '1', true));
+		$this->createManager()->getSize(new File('1', '1', '1'));
 	}
 
 	public function testGetVersions(): void
 	{
 		$manager = $this->createManager(['1' => ['v1' => self::DATA_1, 'v2' => self::DATA_2]]);
-		$file = new File('1', '1', '1', true);
+		$file = new File('1', '1', '1');
 
 		Assert::equal([Version::from('v1'), Version::from('v2')], $manager->getVersions($file));
 	}
 
 	/**
 	 * @param  string[][] $files
+	 * @param  string[][] $publicFiles
 	 */
-	private function createManager(array $files = []): FilesManager
+	private function createManager(array $files = [], array $publicFiles = []): FilesManager
 	{
-		return new FilesManager(new MemoryStorage($files));
+		return new FilesManager(new MemoryStorage($files, $publicFiles));
 	}
 
 }

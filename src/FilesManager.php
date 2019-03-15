@@ -4,6 +4,7 @@ namespace GrandMedia\Files;
 
 use GrandMedia\Files\Exceptions\InvalidFile;
 use GrandMedia\Files\Exceptions\InvalidStream;
+use GrandMedia\Files\Exceptions\InvalidVisibility;
 use GuzzleHttp\Stream\StreamInterface;
 
 final class FilesManager
@@ -19,7 +20,13 @@ final class FilesManager
 		$this->storage = $storage;
 	}
 
-	public function save(StreamInterface $stream, bool $rewrite, File $file, ?Version $version = null): void
+	public function save(
+		StreamInterface $stream,
+		bool $rewrite,
+		bool $public,
+		File $file,
+		?Version $version = null
+	): void
 	{
 		$this->checkReadableStream($stream);
 
@@ -28,6 +35,12 @@ final class FilesManager
 		}
 
 		$this->storage->save($stream, $file, $version);
+
+		if ($public) {
+			$this->storage->setPublic($file, $version);
+		} else {
+			$this->storage->setPrivate($file, $version);
+		}
 	}
 
 	public function delete(File $file): void
@@ -46,6 +59,20 @@ final class FilesManager
 		$this->checkExists($file, $version);
 
 		$this->storage->delete($file, $version);
+	}
+
+	public function setPublic(File $file, ?Version $version): void
+	{
+		$this->checkExists($file, $version);
+
+		$this->storage->setPublic($file, $version);
+	}
+
+	public function setPrivate(File $file, ?Version $version): void
+	{
+		$this->checkExists($file, $version);
+
+		$this->storage->setPrivate($file, $version);
 	}
 
 	public function getStream(File $file, ?Version $version = null): StreamInterface
@@ -71,9 +98,11 @@ final class FilesManager
 
 	public function getPublicUrl(File $file, ?Version $version = null): string
 	{
-		$this->checkExists($file, $version);
+		if (!$this->isPublic($file, $version)) {
+			throw InvalidVisibility::notPublic($file, $version);
+		}
 
-		return $file->isPublic() ? $this->storage->getPublicUrl($file, $version) : '';
+		return $this->storage->getPublicUrl($file, $version);
 	}
 
 	public function getSize(File $file, ?Version $version = null): int
@@ -86,6 +115,13 @@ final class FilesManager
 	public function exists(File $file, ?Version $version = null): bool
 	{
 		return $this->storage->exists($file, $version);
+	}
+
+	public function isPublic(File $file, ?Version $version = null): bool
+	{
+		$this->checkExists($file, $version);
+
+		return $this->storage->isPublic($file, $version);
 	}
 
 	/**

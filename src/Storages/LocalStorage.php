@@ -64,7 +64,20 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 		FileSystem::delete($filePath);
 		$this->deleteEmptyDirectories(\dirname($filePath), $this->filesDirectory);
 
-		if ($file->isPublic()) {
+		//Delete from public directory
+		$this->setPrivate($file, $version);
+	}
+
+	public function setPublic(File $file, ?Version $version): void
+	{
+		if (!$this->isPublic($file, $version)) {
+			FileSystem::copy($this->getFilePath($file, $version), $this->getPublicFilePath($file, $version));
+		}
+	}
+
+	public function setPrivate(File $file, ?Version $version): void
+	{
+		if ($this->isPublic($file, $version)) {
 			$publicFilePath = $this->getPublicFilePath($file, $version);
 
 			FileSystem::delete($publicFilePath);
@@ -84,19 +97,8 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 
 	public function getPublicUrl(File $file, ?Version $version): string
 	{
-		$filePath = $this->getFilePath($file, $version);
-
-		if (!$file->isPublic()) {
-			return '';
-		}
-
-		$publicFilePath = $this->getPublicFilePath($file, $version);
-		if (!\file_exists($publicFilePath)) {
-			FileSystem::copy($filePath, $publicFilePath);
-		}
-
 		return Strings::substring(
-			$publicFilePath,
+			$this->getPublicFilePath($file, $version),
 			Strings::length($this->publicDirectory) + 1
 		);
 	}
@@ -104,6 +106,16 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	public function getSize(File $file, ?Version $version): int
 	{
 		return filesize($this->getFilePath($file, $version));
+	}
+
+	public function exists(File $file, ?Version $version): bool
+	{
+		return \file_exists($this->getFilePath($file, $version));
+	}
+
+	public function isPublic(File $file, ?Version $version): bool
+	{
+		return \file_exists($this->getPublicFilePath($file, $version));
 	}
 
 	/**
@@ -125,11 +137,6 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 		}
 
 		return $versions;
-	}
-
-	public function exists(File $file, ?Version $version): bool
-	{
-		return \file_exists($this->getFilePath($file, $version));
 	}
 
 	private function deleteEmptyDirectories(string $directory, string $upToDirectory): void

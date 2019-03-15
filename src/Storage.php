@@ -11,6 +11,10 @@ interface Storage
 
 	public function delete(File $file, ?Version $version): void;
 
+	public function setPublic(File $file, ?Version $version): void;
+
+	public function setPrivate(File $file, ?Version $version): void;
+
 	public function getStream(File $file, ?Version $version): StreamInterface;
 
 	public function getContentType(File $file, ?Version $version): string;
@@ -20,6 +24,8 @@ interface Storage
 	public function getSize(File $file, ?Version $version): int;
 
 	public function exists(File $file, ?Version $version): bool;
+
+	public function isPublic(File $file, ?Version $version): bool;
 
 	/**
 	 * @return \GrandMedia\Files\Version[]

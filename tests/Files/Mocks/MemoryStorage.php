@@ -21,16 +21,23 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 	private $files;
 
 	/**
+	 * @var string[][]
+	 */
+	private $publicFiles;
+
+	/**
 	 * @var bool
 	 */
 	private $returnWritableStream;
 
 	/**
 	 * @param  string[][] $files
+	 * @param  string[][] $publicFiles
 	 */
-	public function __construct(array $files = [], bool $returnWritableStream = false)
+	public function __construct(array $files = [], array $publicFiles = [], bool $returnWritableStream = false)
 	{
 		$this->files = $files;
+		$this->publicFiles = $publicFiles;
 		$this->returnWritableStream = $returnWritableStream;
 	}
 
@@ -41,7 +48,20 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 
 	public function delete(File $file, ?Version $version): void
 	{
-		unset($this->files[$file->getId()][$version === null ? '' : (string) $version]);
+		unset(
+			$this->files[$file->getId()][$version === null ? '' : (string) $version],
+			$this->publicFiles[$file->getId()][$version === null ? '' : (string) $version]
+		);
+	}
+
+	public function setPublic(File $file, ?Version $version): void
+	{
+		$this->publicFiles[$file->getId()][$version === null ? '' : (string) $version] = true;
+	}
+
+	public function setPrivate(File $file, ?Version $version): void
+	{
+		unset($this->publicFiles[$file->getId()][$version === null ? '' : (string) $version]);
 	}
 
 	public function getStream(File $file, ?Version $version): StreamInterface
@@ -68,6 +88,16 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 		return \strlen($this->files[$file->getId()][$version === null ? '' : (string) $version]);
 	}
 
+	public function exists(File $file, ?Version $version): bool
+	{
+		return isset($this->files[$file->getId()][$version === null ? '' : (string) $version]);
+	}
+
+	public function isPublic(File $file, ?Version $version): bool
+	{
+		return isset($this->publicFiles[$file->getId()][$version === null ? '' : (string) $version]);
+	}
+
 	/**
 	 * @return \GrandMedia\Files\Version[]
 	 */
@@ -84,11 +114,6 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 		}
 
 		return $versions;
-	}
-
-	public function exists(File $file, ?Version $version): bool
-	{
-		return isset($this->files[$file->getId()][$version === null ? '' : (string) $version]);
 	}
 
 }

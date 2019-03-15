@@ -18,7 +18,7 @@ final class FileTest extends \Tester\TestCase
 	 */
 	public function testIdRegex(string $id): void
 	{
-		new File($id, 'asdf', 'adf', true);
+		new File($id, 'asdf', 'adf');
 	}
 
 	/**
@@ -26,7 +26,7 @@ final class FileTest extends \Tester\TestCase
 	 */
 	public function testBlankName(): void
 	{
-		new File('asdf', '', 'asdf', true);
+		new File('asdf', '', 'asdf');
 	}
 
 	/**
@@ -35,7 +35,7 @@ final class FileTest extends \Tester\TestCase
 	 */
 	public function testNamespaceRegex(string $namespace): void
 	{
-		new File('asdf', 'adf', $namespace, true);
+		new File('asdf', 'adf', $namespace);
 	}
 
 	public function getInvalidIds(): array
