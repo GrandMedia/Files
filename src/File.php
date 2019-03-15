@@ -3,6 +3,7 @@
 namespace GrandMedia\Files;
 
 use Assert\Assertion;
+use Nette\Utils\Random;
 
 final class File
 {
@@ -25,15 +26,27 @@ final class File
 	 */
 	private $namespace;
 
-	public function __construct(string $id, string $name, string $namespace)
+	private function __construct()
+	{
+	}
+
+	public static function fromValues(string $id, string $name, string $namespace): self
 	{
 		Assertion::regex($id, self::ID_REGEX);
 		Assertion::notBlank($name);
 		Assertion::regex($namespace, self::NAMESPACE_REGEX);
 
-		$this->id = $id;
-		$this->name = $name;
-		$this->namespace = $namespace;
+		$file = new self();
+		$file->id = $id;
+		$file->name = $name;
+		$file->namespace = $namespace;
+
+		return $file;
+	}
+
+	public static function withRandomId(string $name, string $namespace): self
+	{
+		return self::fromValues(Random::generate(), $name, $namespace);
 	}
 
 	public function getId(): string
