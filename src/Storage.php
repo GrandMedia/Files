@@ -2,7 +2,7 @@
 
 namespace GrandMedia\Files;
 
-use GuzzleHttp\Stream\StreamInterface;
+use Psr\Http\Message\StreamInterface;
 
 interface Storage
 {

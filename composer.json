@@ -16,11 +16,11 @@
 		"php": ">=7.1",
 		"ext-fileinfo": "*",
 		"beberlei/assert": "^3.0",
-		"guzzlehttp/streams": "^3.0",
 		"nette/finder": "^2.4",
 		"nette/safe-stream": "^2.3",
 		"nette/utils": "^2.4",
-		"thecodingmachine/safe": "^0.1.14"
+		"thecodingmachine/safe": "^0.1.14",
+		"guzzlehttp/psr7": "^1.5"
 	},
 	"require-dev": {
 		"grand-media/coding-standard": "^2.0",

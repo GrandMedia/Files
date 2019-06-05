@@ -4,8 +4,8 @@ namespace GrandMediaTests\Files\Mocks;
 
 use GrandMedia\Files\File;
 use GrandMedia\Files\Version;
-use GuzzleHttp\Stream\Stream;
-use GuzzleHttp\Stream\StreamInterface;
+use GuzzleHttp\Psr7\Stream;
+use Psr\Http\Message\StreamInterface;
 use Tester\FileMock;
 use function Safe\fopen;
 
@@ -68,9 +68,7 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 	{
 		$data = $this->files[$file->getId()][$version === null ? '' : (string) $version];
 
-		return $this->returnWritableStream ?
-			Stream::factory($data) :
-			Stream::factory(fopen(FileMock::create($data), 'rb'));
+		return new Stream(fopen(FileMock::create($data), $this->returnWritableStream ? 'wb' : 'rb'));
 	}
 
 	public function getContentType(File $file, ?Version $version): string

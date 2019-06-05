@@ -5,8 +5,9 @@ namespace GrandMediaTests\Files;
 use GrandMedia\Files\File;
 use GrandMedia\Files\FilesManager;
 use GrandMedia\Files\Version;
+use GrandMediaTests\Files\Helpers\StreamFactory;
 use GrandMediaTests\Files\Mocks\MemoryStorage;
-use GuzzleHttp\Stream\Stream;
+use GuzzleHttp\Psr7\Stream;
 use Tester\Assert;
 use Tester\FileMock;
 
@@ -26,11 +27,11 @@ final class FilesManagerTest extends \Tester\TestCase
 		$manager = $this->createManager();
 		$file = File::fromValues('1', '1', '1');
 
-		$manager->save(Stream::factory(self::DATA_1), true, true, $file);
+		$manager->save(StreamFactory::createFromString(self::DATA_1), true, true, $file);
 		Assert::same(self::DATA_1, (string) $manager->getStream($file));
 		Assert::true($manager->isPublic($file));
 
-		$manager->save(Stream::factory(self::DATA_2), true, false, $file);
+		$manager->save(StreamFactory::createFromString(self::DATA_2), true, false, $file);
 		Assert::same(self::DATA_2, (string) $manager->getStream($file));
 		Assert::false($manager->isPublic($file));
 	}
@@ -54,7 +55,7 @@ final class FilesManagerTest extends \Tester\TestCase
 		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);
 		$file = File::fromValues('1', '1', '1');
 
-		$manager->save(Stream::factory(self::DATA_2), false, true, $file);
+		$manager->save(StreamFactory::createFromString(self::DATA_2), false, true, $file);
 	}
 
 	public function testDelete(): void

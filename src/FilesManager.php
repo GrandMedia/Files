@@ -5,7 +5,7 @@ namespace GrandMedia\Files;
 use GrandMedia\Files\Exceptions\InvalidFile;
 use GrandMedia\Files\Exceptions\InvalidStream;
 use GrandMedia\Files\Exceptions\InvalidVisibility;
-use GuzzleHttp\Stream\StreamInterface;
+use Psr\Http\Message\StreamInterface;
 
 final class FilesManager
 {

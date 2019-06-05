@@ -6,12 +6,13 @@ use Assert\Assertion;
 use FilesystemIterator;
 use GrandMedia\Files\File;
 use GrandMedia\Files\Version;
-use GuzzleHttp\Stream\Stream;
-use GuzzleHttp\Stream\StreamInterface;
+use GuzzleHttp\Psr7\Stream;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
 use Nette\Utils\Strings;
+use Psr\Http\Message\StreamInterface;
 use function Safe\filesize;
+use function Safe\finfo_open;
 use function Safe\fopen;
 use function Safe\realpath;
 
@@ -92,7 +93,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 
 	public function getContentType(File $file, ?Version $version): string
 	{
-		return \finfo_file(\finfo_open(\FILEINFO_MIME_TYPE), $this->getFilePath($file, $version));
+		return (string) \finfo_file(finfo_open(\FILEINFO_MIME_TYPE), $this->getFilePath($file, $version));
 	}
 
 	public function getPublicUrl(File $file, ?Version $version): string

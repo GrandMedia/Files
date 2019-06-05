@@ -5,7 +5,7 @@ namespace GrandMediaTests\Files\Storages;
 use GrandMedia\Files\File;
 use GrandMedia\Files\Storages\LocalStorage;
 use GrandMedia\Files\Version;
-use GuzzleHttp\Stream\Stream;
+use GrandMediaTests\Files\Helpers\StreamFactory;
 use Nette\Utils\FileSystem;
 use Tester\Assert;
 
@@ -61,11 +61,11 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
 		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
 		Assert::same(self::DATA_1, \file_get_contents(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
 
-		$storage->save(Stream::factory(self::DATA_2), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, null);
 		Assert::same(self::DATA_2, \file_get_contents(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
 	}
 
@@ -75,7 +75,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 		$version = Version::from('v1');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, $version);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, $version);
 		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab_v1'));
 		Assert::same(self::DATA_1, \file_get_contents(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab_v1'));
 	}
@@ -86,9 +86,9 @@ final class LocalStorageTest extends \Tester\TestCase
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 		$version = Version::from('v1');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
 		$storage->setPublic($file, null);
-		$storage->save(Stream::factory(self::DATA_2), $file, $version);
+		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, $version);
 		$storage->setPublic($file, $version);
 
 		$storage->delete($file, $version);
@@ -113,7 +113,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
 		$storage->setPublic($file, null);
 
 		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
@@ -125,7 +125,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
 		$storage->setPublic($file, null);
 		$storage->setPrivate($file, null);
 
@@ -137,7 +137,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
 
 		Assert::same(self::DATA_1, (string) $storage->getStream($file, null));
 	}
@@ -147,7 +147,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
 
 		Assert::same('text/plain', $storage->getContentType($file, null));
 	}
@@ -157,7 +157,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
 		$storage->setPublic($file, null);
 
 		Assert::same('name/space/foo/12345/ab/test.txt', $storage->getPublicUrl($file, null));
@@ -169,7 +169,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
 
 		Assert::same(\strlen(self::DATA_1), $storage->getSize($file, null));
 	}
@@ -180,7 +180,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$file1 = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 		$file2 = File::fromValues('12345ac', 'test.txt', 'name/space/foo');
 
-		$storage->save(Stream::factory(self::DATA_1), $file1, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file1, null);
 
 		Assert::true($storage->exists($file1, null));
 		Assert::false($storage->exists($file2, null));
@@ -192,7 +192,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$file1 = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 		$file2 = File::fromValues('12345ac', 'test.txt', 'name/space/foo');
 
-		$storage->save(Stream::factory(self::DATA_1), $file1, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file1, null);
 		$storage->setPublic($file1, null);
 
 		Assert::true($storage->isPublic($file1, null));
@@ -207,8 +207,8 @@ final class LocalStorageTest extends \Tester\TestCase
 		$versionV1 = Version::from('v1');
 		$versionV2 = Version::from('v2');
 
-		$storage->save(Stream::factory(self::DATA_1), $file, $versionV1);
-		$storage->save(Stream::factory(self::DATA_2), $file, $versionV2);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, $versionV1);
+		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, $versionV2);
 
 		Assert::equal([$versionV1, $versionV2], $storage->getVersions($file));
 		Assert::equal([], $storage->getVersions(File::fromValues('1', '1', '1')));
