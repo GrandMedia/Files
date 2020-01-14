@@ -24,7 +24,7 @@
 	},
 	"require-dev": {
 		"grand-media/coding-standard": "^2.0",
-		"nette/tester": "~1.7"
+		"nette/tester": "^2.3"
 	},
 	"autoload": {
 		"psr-4": {
