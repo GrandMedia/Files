@@ -24,7 +24,8 @@
 	},
 	"require-dev": {
 		"grand-media/coding-standard": "^2.0",
-		"nette/tester": "^2.3"
+		"nette/tester": "^2.3",
+		"phpstan/phpstan": "^0.12"
 	},
 	"autoload": {
 		"psr-4": {
