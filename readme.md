@@ -13,5 +13,5 @@ Installation
 The best way to install GrandMedia/Files is using  [Composer](http://getcomposer.org/):
 
 ```sh
-$ composer require grand-media/files:@dev
+$ composer require grand-media/files
 ```
