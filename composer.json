@@ -13,7 +13,7 @@
 		"issues": "https://github.com/GrandMedia/Files/issues"
 	},
 	"require": {
-		"php": ">=7.1",
+		"php": ">=7.2",
 		"ext-fileinfo": "*",
 		"beberlei/assert": "^3.0",
 		"nette/finder": "^2.4",
