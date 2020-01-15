@@ -19,7 +19,7 @@
 		"nette/finder": "^2.4",
 		"nette/safe-stream": "^2.3",
 		"nette/utils": "^3.0",
-		"thecodingmachine/safe": "^0.1.14",
+		"thecodingmachine/safe": "^1.0",
 		"guzzlehttp/psr7": "^1.5"
 	},
 	"require-dev": {
