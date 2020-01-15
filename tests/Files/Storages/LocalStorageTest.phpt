@@ -18,7 +18,7 @@ final class LocalStorageTest extends \Tester\TestCase
 {
 
 	private const PUBLIC_DIR = \TEMP_DIR . '/public';
-	private const FILES_DIR = \TEMP_DIR . '/files';
+	private const PRIVATE_DIR = \TEMP_DIR . '/files';
 	private const NOT_DIR = \TEMP_DIR . '/not-exists';
 	private const NOT_WRITABLE_DIR = \TEMP_DIR . '/not-writable';
 	private const DATA_1 = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
@@ -45,7 +45,7 @@ final class LocalStorageTest extends \Tester\TestCase
 	 */
 	public function testPublicNotDir(): void
 	{
-		new LocalStorage(self::FILES_DIR, self::NOT_DIR);
+		new LocalStorage(self::PRIVATE_DIR, self::NOT_DIR);
 	}
 
 	/**
@@ -53,31 +53,55 @@ final class LocalStorageTest extends \Tester\TestCase
 	 */
 	public function testPublicNotWritableDir(): void
 	{
-		new LocalStorage(self::FILES_DIR, self::NOT_WRITABLE_DIR);
+		new LocalStorage(self::PRIVATE_DIR, self::NOT_WRITABLE_DIR);
 	}
 
-	public function testSave(): void
+	public function testSavePrivate(): void
 	{
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
-		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
-		Assert::same(self::DATA_1, \file_get_contents(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null, false);
+		Assert::true(\file_exists(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test.txt'));
+		Assert::same(self::DATA_1, \file_get_contents(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test.txt'));
 
-		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, null);
-		Assert::same(self::DATA_2, \file_get_contents(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
+		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, null, false);
+		Assert::same(self::DATA_2, \file_get_contents(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test.txt'));
 	}
 
-	public function testSaveVersion(): void
+	public function testSavePublic(): void
+	{
+		$storage = $this->createStorage();
+		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
+
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null, true);
+		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
+		Assert::same(self::DATA_1, \file_get_contents(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
+
+		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, null, true);
+		Assert::same(self::DATA_2, \file_get_contents(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
+	}
+
+	public function testSaveVersionPrivate(): void
 	{
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 		$version = Version::from('v1');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, $version);
-		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab_v1'));
-		Assert::same(self::DATA_1, \file_get_contents(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab_v1'));
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, $version, false);
+		Assert::true(\file_exists(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test_v1.txt'));
+		Assert::same(self::DATA_1, \file_get_contents(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test_v1.txt'));
+	}
+
+	public function testSaveVersionPublic(): void
+	{
+		$storage = $this->createStorage();
+		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
+		$version = Version::from('v1');
+
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, $version, true);
+		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test_v1.txt'));
+		Assert::same(self::DATA_1, \file_get_contents(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test_v1.txt'));
 	}
 
 	public function testDelete(): void
@@ -86,26 +110,18 @@ final class LocalStorageTest extends \Tester\TestCase
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 		$version = Version::from('v1');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
-		$storage->setPublic($file, null);
-		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, $version);
-		$storage->setPublic($file, $version);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null, false);
+		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, $version, false);
 
 		$storage->delete($file, $version);
-		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab_v1'));
-		Assert::true(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
-		Assert::false(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test_v1.txt'));
-		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
+		Assert::false(\file_exists(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test_v1.txt'));
+		Assert::true(\file_exists(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test.txt'));
 
 		$storage->delete($file, null);
-		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo/12345/ab/12345ab'));
-		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo/12345'));
-		Assert::false(\file_exists(self::FILES_DIR . '/name/space/foo'));
-		Assert::true(\file_exists(self::FILES_DIR));
-		Assert::false(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
-		Assert::false(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345'));
-		Assert::false(\file_exists(self::PUBLIC_DIR . '/name/space/foo'));
-		Assert::true(\file_exists(self::PUBLIC_DIR));
+		Assert::false(\file_exists(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test.txt'));
+		Assert::false(\file_exists(self::PRIVATE_DIR . '/name/space/foo/12345'));
+		Assert::false(\file_exists(self::PRIVATE_DIR . '/name/space/foo'));
+		Assert::true(\file_exists(self::PRIVATE_DIR));
 	}
 
 	public function testSetPublic(): void
@@ -113,9 +129,10 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null, false);
 		$storage->setPublic($file, null);
 
+		Assert::false(\file_exists(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test.txt'));
 		Assert::true(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
 		Assert::same(self::DATA_1, \file_get_contents(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
 	}
@@ -125,11 +142,12 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
-		$storage->setPublic($file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null, true);
 		$storage->setPrivate($file, null);
 
 		Assert::false(\file_exists(self::PUBLIC_DIR . '/name/space/foo/12345/ab/test.txt'));
+		Assert::true(\file_exists(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test.txt'));
+		Assert::same(self::DATA_1, \file_get_contents(self::PRIVATE_DIR . '/name/space/foo/12345/ab/test.txt'));
 	}
 
 	public function testGetStream(): void
@@ -137,7 +155,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null, false);
 
 		Assert::same(self::DATA_1, (string) $storage->getStream($file, null));
 	}
@@ -147,7 +165,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null, false);
 
 		Assert::same('text/plain', $storage->getContentType($file, null));
 	}
@@ -157,8 +175,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
-		$storage->setPublic($file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null, true);
 
 		Assert::same('name/space/foo/12345/ab/test.txt', $storage->getPublicUrl($file, null));
 		Assert::same('1/1/1', $storage->getPublicUrl(File::fromValues('1', '1', '1'), null));
@@ -169,7 +186,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$storage = $this->createStorage();
 		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, null, false);
 
 		Assert::same(\strlen(self::DATA_1), $storage->getSize($file, null));
 	}
@@ -180,7 +197,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$file1 = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 		$file2 = File::fromValues('12345ac', 'test.txt', 'name/space/foo');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file1, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file1, null, false);
 
 		Assert::true($storage->exists($file1, null));
 		Assert::false($storage->exists($file2, null));
@@ -192,8 +209,7 @@ final class LocalStorageTest extends \Tester\TestCase
 		$file1 = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
 		$file2 = File::fromValues('12345ac', 'test.txt', 'name/space/foo');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file1, null);
-		$storage->setPublic($file1, null);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file1, null, true);
 
 		Assert::true($storage->isPublic($file1, null));
 		Assert::false($storage->isPublic($file2, null));
@@ -207,10 +223,29 @@ final class LocalStorageTest extends \Tester\TestCase
 		$versionV1 = Version::from('v1');
 		$versionV2 = Version::from('v2');
 
-		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, $versionV1);
-		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, $versionV2);
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, $versionV1, false);
+		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, $versionV2, false);
 
-		Assert::equal([$versionV1, $versionV2], $storage->getVersions($file));
+		$versions = \array_map('strval', $storage->getVersions($file));
+		Assert::contains('v1', $versions);
+		Assert::contains('v2', $versions);
+		Assert::equal([], $storage->getVersions(File::fromValues('1', '1', '1')));
+	}
+
+	public function testGetMultiVersions(): void
+	{
+		$storage = $this->createStorage();
+		$file = File::fromValues('12345ab', 'test.txt', 'name/space/foo');
+
+		$versionV1 = Version::from('v1');
+		$versionV2 = Version::from('v2');
+
+		$storage->save(StreamFactory::createFromString(self::DATA_1), $file, $versionV1, true);
+		$storage->save(StreamFactory::createFromString(self::DATA_2), $file, $versionV2, false);
+
+		$versions = \array_map('strval', $storage->getVersions($file));
+		Assert::contains('v1', $versions);
+		Assert::contains('v2', $versions);
 		Assert::equal([], $storage->getVersions(File::fromValues('1', '1', '1')));
 	}
 
@@ -218,7 +253,7 @@ final class LocalStorageTest extends \Tester\TestCase
 	{
 		parent::setUp();
 
-		FileSystem::createDir(self::FILES_DIR);
+		FileSystem::createDir(self::PRIVATE_DIR);
 		FileSystem::createDir(self::PUBLIC_DIR);
 		FileSystem::createDir(self::NOT_WRITABLE_DIR, '0555');
 	}
@@ -232,7 +267,7 @@ final class LocalStorageTest extends \Tester\TestCase
 
 	private function createStorage(): LocalStorage
 	{
-		return new LocalStorage(self::FILES_DIR, self::PUBLIC_DIR);
+		return new LocalStorage(self::PRIVATE_DIR, self::PUBLIC_DIR);
 	}
 
 }

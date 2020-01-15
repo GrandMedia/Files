@@ -34,13 +34,7 @@ final class FilesManager
 			throw InvalidFile::exists($file, $version);
 		}
 
-		$this->storage->save($stream, $file, $version);
-
-		if ($public) {
-			$this->storage->setPublic($file, $version);
-		} else {
-			$this->storage->setPrivate($file, $version);
-		}
+		$this->storage->save($stream, $file, $version, $public);
 	}
 
 	public function delete(File $file): void

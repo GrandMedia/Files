@@ -4,12 +4,12 @@ namespace GrandMedia\Files\Storages;
 
 use Assert\Assertion;
 use FilesystemIterator;
+use GrandMedia\Files\Exceptions\InvalidFile;
 use GrandMedia\Files\File;
 use GrandMedia\Files\Version;
 use GuzzleHttp\Psr7\Stream;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
-use Nette\Utils\Strings;
 use Psr\Http\Message\StreamInterface;
 use function Safe\filesize;
 use function Safe\finfo_open;
@@ -26,27 +26,27 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	/**
 	 * @var string
 	 */
-	private $filesDirectory;
+	private $privateDirectory;
 
 	/**
 	 * @var string
 	 */
 	private $publicDirectory;
 
-	public function __construct(string $filesDirectory, string $publicDirectory)
+	public function __construct(string $privateDirectory, string $publicDirectory)
 	{
-		Assertion::directory($filesDirectory);
-		Assertion::writeable($filesDirectory);
+		Assertion::directory($privateDirectory);
+		Assertion::writeable($privateDirectory);
 		Assertion::directory($publicDirectory);
 		Assertion::writeable($publicDirectory);
 
-		$this->filesDirectory = realpath($filesDirectory);
+		$this->privateDirectory = realpath($privateDirectory);
 		$this->publicDirectory = realpath($publicDirectory);
 	}
 
-	public function save(StreamInterface $stream, File $file, ?Version $version): void
+	public function save(StreamInterface $stream, File $file, ?Version $version, bool $public): void
 	{
-		$filePath = $this->getFilePath($file, $version);
+		$filePath = $public ? $this->getPublicFilePath($file, $version) : $this->getPrivateFilePath($file, $version);
 
 		FileSystem::createDir(\dirname($filePath));
 
@@ -63,27 +63,23 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 		$filePath = $this->getFilePath($file, $version);
 
 		FileSystem::delete($filePath);
-		$this->deleteEmptyDirectories(\dirname($filePath), $this->filesDirectory);
-
-		//Delete from public directory
-		$this->setPrivate($file, $version);
+		$this->deleteEmptyDirectories(\dirname($filePath));
 	}
 
 	public function setPublic(File $file, ?Version $version): void
 	{
-		if (!$this->isPublic($file, $version)) {
-			FileSystem::copy($this->getFilePath($file, $version), $this->getPublicFilePath($file, $version));
-		}
+		$filePath = $this->getFilePath($file, $version);
+
+		FileSystem::rename($filePath, $this->getPublicFilePath($file, $version));
+		$this->deleteEmptyDirectories(\dirname($filePath));
 	}
 
 	public function setPrivate(File $file, ?Version $version): void
 	{
-		if ($this->isPublic($file, $version)) {
-			$publicFilePath = $this->getPublicFilePath($file, $version);
+		$filePath = $this->getFilePath($file, $version);
 
-			FileSystem::delete($publicFilePath);
-			$this->deleteEmptyDirectories(\dirname($publicFilePath), $this->publicDirectory);
-		}
+		FileSystem::rename($filePath, $this->getPrivateFilePath($file, $version));
+		$this->deleteEmptyDirectories(\dirname($filePath));
 	}
 
 	public function getStream(File $file, ?Version $version): StreamInterface
@@ -98,10 +94,7 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 
 	public function getPublicUrl(File $file, ?Version $version): string
 	{
-		return Strings::substring(
-			$this->getPublicFilePath($file, $version),
-			Strings::length($this->publicDirectory) + 1
-		);
+		return $this->getFileRelativePath($file, $version);
 	}
 
 	public function getSize(File $file, ?Version $version): int
@@ -111,12 +104,13 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 
 	public function exists(File $file, ?Version $version): bool
 	{
-		return \file_exists($this->getFilePath($file, $version));
+		return \is_file($this->getPublicFilePath($file, $version)) ||
+			\is_file($this->getPrivateFilePath($file, $version));
 	}
 
 	public function isPublic(File $file, ?Version $version): bool
 	{
-		return \file_exists($this->getPublicFilePath($file, $version));
+		return \is_file($this->getPublicFilePath($file, $version));
 	}
 
 	/**
@@ -126,13 +120,22 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 	{
 		$versions = [];
 
-		$fileDirectory = $this->getFileDirectory($file);
-		if (\is_dir($fileDirectory)) {
+		$directories = \array_values(
+			\array_filter(
+				[
+					\dirname($this->getPublicFilePath($file, null)),
+					\dirname($this->getPrivateFilePath($file, null)),
+				],
+				'is_dir'
+			)
+		);
+
+		if ($directories !== []) {
 			/** @var \SplFileInfo $info */
-			foreach (Finder::findFiles('*')->from($fileDirectory) as $info) {
-				if ($info->getBasename() !== $file->getId()) {
-					$parts = \explode(self::VERSION_SEPARATOR, $info->getBasename());
-					$versions[] = Version::from($parts[\count($parts) - 1]);
+			foreach (Finder::findFiles('*')->in($directories) as $info) {
+				if ($info->getBasename() !== $file->getName()) {
+					$parts = \explode(self::VERSION_SEPARATOR, $info->getBasename('.' . $info->getExtension()));
+					$versions[] = Version::from((string) \end($parts));
 				}
 			}
 		}
@@ -140,12 +143,14 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 		return $versions;
 	}
 
-	private function deleteEmptyDirectories(string $directory, string $upToDirectory): void
+	private function deleteEmptyDirectories(string $directory): void
 	{
 		$directory = realpath($directory);
-		$upToDirectory = realpath($upToDirectory);
 
-		while ($directory !== $upToDirectory && !(new FilesystemIterator($directory))->valid()) {
+		while (
+			!\in_array($directory, [$this->privateDirectory, $this->publicDirectory], true) &&
+			!(new FilesystemIterator($directory))->valid()
+		) {
 			FileSystem::delete($directory);
 
 			$parts = \explode('/', $directory);
@@ -154,7 +159,42 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 		}
 	}
 
+	private function getFilePath(File $file, ?Version $version): string
+	{
+		$publicPath = $this->getPublicFilePath($file, $version);
+		if (\is_file($publicPath)) {
+			return $publicPath;
+		}
+
+		$privatePath = $this->getPrivateFilePath($file, $version);
+		if (\is_file($privatePath)) {
+			return $privatePath;
+		}
+
+		throw InvalidFile::notExists($file, $version);
+	}
+
+	private function getPrivateFilePath(File $file, ?Version $version): string
+	{
+		return $this->joinDirectories(
+			[
+				$this->privateDirectory,
+				$this->getFileRelativePath($file, $version),
+			]
+		);
+	}
+
 	private function getPublicFilePath(File $file, ?Version $version): string
+	{
+		return $this->joinDirectories(
+			[
+				$this->publicDirectory,
+				$this->getFileRelativePath($file, $version),
+			]
+		);
+	}
+
+	private function getFileRelativePath(File $file, ?Version $version): string
 	{
 		$fileName = $file->getName();
 		if ($version !== null) {
@@ -166,43 +206,11 @@ final class LocalStorage implements \GrandMedia\Files\Storage
 
 		return $this->joinDirectories(
 			[
-				$this->publicDirectory,
 				$file->getNamespace(),
-				$this->getIdDirectory($file->getId()),
+				$this->joinDirectories(\str_split($file->getId(), self::ID_CHUNK_LENGTH)),
 				$fileName,
 			]
 		);
-	}
-
-	private function getFilePath(File $file, ?Version $version): string
-	{
-		$fileName = $file->getId();
-		if ($version !== null) {
-			$fileName .= self::VERSION_SEPARATOR . $version;
-		}
-
-		return $this->joinDirectories(
-			[
-				$this->getFileDirectory($file),
-				$fileName,
-			]
-		);
-	}
-
-	private function getFileDirectory(File $file): string
-	{
-		return $this->joinDirectories(
-			[
-				$this->filesDirectory,
-				$file->getNamespace(),
-				$this->getIdDirectory($file->getId()),
-			]
-		);
-	}
-
-	private function getIdDirectory(string $id): string
-	{
-		return $this->joinDirectories(\str_split($id, self::ID_CHUNK_LENGTH));
 	}
 
 	/**

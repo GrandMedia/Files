@@ -68,13 +68,6 @@ final class FilesManagerTest extends \Tester\TestCase
 		Assert::false($manager->exists($file, Version::from('v1')));
 	}
 
-	public function testDeleteNotExists(): void
-	{
-		$this->createManager()->delete(File::fromValues('1', '1', '1'));
-
-		Assert::true(true);
-	}
-
 	public function testDeleteVersion(): void
 	{
 		$manager = $this->createManager(['1' => ['' => self::DATA_1]]);

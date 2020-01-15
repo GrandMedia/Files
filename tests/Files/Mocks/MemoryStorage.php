@@ -16,14 +16,9 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 	public const PUBLIC_URL = 'public/url/';
 
 	/**
-	 * @var string[][]
+	 * @var array[][]
 	 */
 	private $files;
-
-	/**
-	 * @var string[][]
-	 */
-	private $publicFiles;
 
 	/**
 	 * @var bool
@@ -31,42 +26,57 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 	private $returnWritableStream;
 
 	/**
-	 * @param  string[][] $files
-	 * @param  string[][] $publicFiles
+	 * @param string[][] $privateFiles
+	 * @param string[][] $publicFiles
 	 */
-	public function __construct(array $files = [], array $publicFiles = [], bool $returnWritableStream = false)
+	public function __construct(array $privateFiles = [], array $publicFiles = [], bool $returnWritableStream = false)
 	{
-		$this->files = $files;
-		$this->publicFiles = $publicFiles;
+		$this->files = [];
+		foreach ($privateFiles as $id => $files) {
+			foreach ($files as $version => $file) {
+				$this->files[$id][$version] = [
+					'data' => $file,
+					'public' => false,
+				];
+			}
+		}
+		foreach ($publicFiles as $id => $files) {
+			foreach ($files as $version => $file) {
+				$this->files[$id][$version] = [
+					'data' => $file,
+					'public' => true,
+				];
+			}
+		}
 		$this->returnWritableStream = $returnWritableStream;
 	}
 
-	public function save(StreamInterface $stream, File $file, ?Version $version): void
+	public function save(StreamInterface $stream, File $file, ?Version $version, bool $public): void
 	{
-		$this->files[$file->getId()][$version === null ? '' : (string) $version] = (string) $stream;
+		$this->files[$file->getId()][(string) $version] = [
+			'data' => (string) $stream,
+			'public' => $public,
+		];
 	}
 
 	public function delete(File $file, ?Version $version): void
 	{
-		unset(
-			$this->files[$file->getId()][$version === null ? '' : (string) $version],
-			$this->publicFiles[$file->getId()][$version === null ? '' : (string) $version]
-		);
+		unset($this->files[$file->getId()][(string) $version]);
 	}
 
 	public function setPublic(File $file, ?Version $version): void
 	{
-		$this->publicFiles[$file->getId()][$version === null ? '' : (string) $version] = true;
+		$this->files[$file->getId()][(string) $version]['public'] = true;
 	}
 
 	public function setPrivate(File $file, ?Version $version): void
 	{
-		unset($this->publicFiles[$file->getId()][$version === null ? '' : (string) $version]);
+		$this->files[$file->getId()][(string) $version]['public'] = false;
 	}
 
 	public function getStream(File $file, ?Version $version): StreamInterface
 	{
-		$data = $this->files[$file->getId()][$version === null ? '' : (string) $version];
+		$data = $this->files[$file->getId()][(string) $version]['data'];
 
 		return new Stream(fopen(FileMock::create($data), $this->returnWritableStream ? 'wb' : 'rb'));
 	}
@@ -83,17 +93,17 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 
 	public function getSize(File $file, ?Version $version): int
 	{
-		return \strlen($this->files[$file->getId()][$version === null ? '' : (string) $version]);
+		return \strlen($this->files[$file->getId()][(string) $version]['data']);
 	}
 
 	public function exists(File $file, ?Version $version): bool
 	{
-		return isset($this->files[$file->getId()][$version === null ? '' : (string) $version]);
+		return isset($this->files[$file->getId()][(string) $version]);
 	}
 
 	public function isPublic(File $file, ?Version $version): bool
 	{
-		return isset($this->publicFiles[$file->getId()][$version === null ? '' : (string) $version]);
+		return $this->files[$file->getId()][(string) $version]['public'];
 	}
 
 	/**
@@ -103,11 +113,9 @@ final class MemoryStorage implements \GrandMedia\Files\Storage
 	{
 		$versions = [];
 
-		if (isset($this->files[$file->getId()])) {
-			foreach ($this->files[$file->getId()] as $version => $data) {
-				if ($version !== '') {
-					$versions[] = Version::from((string) $version);
-				}
+		foreach (\array_keys($this->files[$file->getId()]) as $version) {
+			if ($version !== '') {
+				$versions[] = Version::from((string) $version);
 			}
 		}
 

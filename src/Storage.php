@@ -7,7 +7,7 @@ use Psr\Http\Message\StreamInterface;
 interface Storage
 {
 
-	public function save(StreamInterface $stream, File $file, ?Version $version): void;
+	public function save(StreamInterface $stream, File $file, ?Version $version, bool $public): void;
 
 	public function delete(File $file, ?Version $version): void;
 
