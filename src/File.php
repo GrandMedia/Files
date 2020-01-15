@@ -8,8 +8,8 @@ use Nette\Utils\Random;
 final class File
 {
 
-	private const ID_REGEX = '/^[a-zA-Z\d-_]+$/';
-	private const NAMESPACE_REGEX = '/^[a-zA-Z\d-_\/]+$/';
+	private const ID_REGEX = '/^[a-zA-Z\d\-_]+$/';
+	private const NAMESPACE_REGEX = '/^[a-zA-Z\d\-_\/]+$/';
 
 	/**
 	 * @var string
