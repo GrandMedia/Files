@@ -255,7 +255,7 @@ final class LocalStorageTest extends \Tester\TestCase
 
 		FileSystem::createDir(self::PRIVATE_DIR);
 		FileSystem::createDir(self::PUBLIC_DIR);
-		FileSystem::createDir(self::NOT_WRITABLE_DIR, '0555');
+		FileSystem::createDir(self::NOT_WRITABLE_DIR, 0555);
 	}
 
 	protected function tearDown(): void
